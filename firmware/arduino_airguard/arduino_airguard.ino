@@ -15,7 +15,7 @@
 // --- Pin Definitions on Arduino Mega 2560 ---
 #define PIN_MQ135      A0  // Air Quality (CO2, NH3, Smoke)
 #define PIN_MQ2        A1  // Combustible Gas Leakage (LPG, CH4)
-#define PIN_O2         A2  // Electrochemical O2 Sensor
+// #define PIN_O2      A2  // [RESERVED FOR FUTURE PHASE 2 UPGRADE] Electrochemical O2 Sensor
 #define PIN_DUST_VO    A3  // Sharp GP2Y1010AU0F Analog Output
 #define PIN_DHT        4   // DHT11 / DHT22 Digital One-Wire
 #define PIN_DUST_LED   7   // Sharp Optical Dust Pulse Trigger
@@ -41,7 +41,6 @@ const unsigned long READ_INTERVAL = 3000;
 const int THRESHOLD_MQ135_WARN   = 300;
 const int THRESHOLD_MQ135_DANGER = 500;
 const int THRESHOLD_MQ2_DANGER   = 400;
-const float THRESHOLD_O2_MIN     = 19.5; // Normal atmospheric air is ~20.9% O2
 
 void setup() {
   // Initialize USB Serial for PC debugging
@@ -63,7 +62,9 @@ void setup() {
 
   Serial.println(F("=================================================="));
   Serial.println(F("AirGuard IoT - Arduino Mega 2560 Edge Station"));
-  Serial.println(F("Telemetry is streamed to Real-Time Web Application"));
+  Serial.println(F("Sensors: MQ-135, MQ-2, Sharp Optical Dust, DHT11"));
+  Serial.println(F("Expansion Slot: Analog A2 reserved for Future O2"));
+  Serial.println(F("Telemetry streamed to Real-Time Web Application"));
   Serial.println(F("=================================================="));
 
   // Visual confirmation on boot
@@ -92,18 +93,9 @@ float readDustDensity() {
   return (dustVal > 0.0) ? dustVal : 0.0;
 }
 
-float readO2Percentage() {
-  int raw = analogRead(PIN_O2);
-  float voltage = raw * (5.0 / 1024.0);
-  // Standard electrochemical sensor linear curve
-  float o2 = (voltage / 2.0) * 20.9;
-  return o2;
-}
-
-void updateAlarms(int mq135Val, int mq2Val, float o2Val) {
+void updateAlarms(int mq135Val, int mq2Val) {
   bool isDanger = (mq135Val > THRESHOLD_MQ135_DANGER) || 
-                  (mq2Val > THRESHOLD_MQ2_DANGER) || 
-                  (o2Val < THRESHOLD_O2_MIN);
+                  (mq2Val > THRESHOLD_MQ2_DANGER);
 
   bool isWarning = (!isDanger) && (mq135Val > THRESHOLD_MQ135_WARN);
 
@@ -134,7 +126,6 @@ void loop() {
     float humidity    = dht.readHumidity();
     int mq135Value    = analogRead(PIN_MQ135);
     int mq2Value      = analogRead(PIN_MQ2);
-    float o2Value     = readO2Percentage();
     float dustDensity = readDustDensity();
 
     if (isnan(temperature) || isnan(humidity)) {
@@ -143,16 +134,15 @@ void loop() {
     }
 
     // Update on-site acoustic and LED indicators
-    updateAlarms(mq135Value, mq2Value, o2Value);
+    updateAlarms(mq135Value, mq2Value);
 
     // Format structured JSON telemetry for Web Application & Cloud broker
-    // Example: {"temp":28.5,"hum":65.0,"aqi":180,"gas":95,"o2":20.8,"dust":34.2}
+    // Example: {"temp":28.5,"hum":65.0,"aqi":180,"gas":95,"dust":34.2}
     String jsonPayload = "{";
     jsonPayload += "\"temp\":" + String(temperature, 1) + ",";
     jsonPayload += "\"hum\":" + String(humidity, 1) + ",";
     jsonPayload += "\"aqi\":" + String(mq135Value) + ",";
     jsonPayload += "\"gas\":" + String(mq2Value) + ",";
-    jsonPayload += "\"o2\":" + String(o2Value, 1) + ",";
     jsonPayload += "\"dust\":" + String(dustDensity, 1);
     jsonPayload += "}";
 

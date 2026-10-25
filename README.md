@@ -34,7 +34,7 @@
 
 ## 1. Project Overview
 
-**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, combustible gas leaks, oxygen depletion, and airborne dust particles in real time. 
+**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, combustible gas leaks, airborne dust particles, and ambient climate conditions in real time (with an analog hardware interface reserved for future oxygen sensing). 
 
 By combining the high-capacity deterministic data acquisition of an **Arduino Mega 2560** with the wireless networking capabilities of an **ESP8266 Wi-Fi** module, the system bridges local multi-sensor physical telemetry with a custom-developed **Real-Time Web Application** over the lightweight **MQTT** protocol.
 
@@ -44,11 +44,11 @@ By combining the high-capacity deterministic data acquisition of an **Arduino Me
 
 - **Multi-Gas Air Quality Monitoring:** Continuously quantifies indoor/ambient air pollution (CO₂, NH₃, benzene, smoke) via an MQ-135 sensor.
 - **Harmful Gas Leakage Detection:** Detects flammable and toxic gas leaks (LPG, propane, methane) with an MQ-2 sensor to avoid fire hazards.
-- **Oxygen Concentration Measurement:** Real-time percentage measurement (% O₂) using an electrochemical oxygen sensor to prevent asphyxiation in confined spaces.
 - **Particulate Matter (Dust) Detection:** Optical dust sensing (Sharp GP2Y1010AU0F) to assess fine suspended particulates in µg/m³.
 - **Climate Monitoring:** Digital temperature and relative humidity tracking using a DHT11/DHT22 sensor.
 - **Dual-Layer Alert System:** Instantaneous on-site audio-visual alarms (active buzzer + tri-color LEDs) paired with remote cloud/web alert banners.
 - **Real-Time Web Dashboard:** Responsive web interface with interactive gauges, live time-series charts, and historical telemetry archives (superseding character LCD hardware constraints).
+- **Future Scope / Phase 2 Upgrade (Oxygen Concentration):** Hardware channel (Analog Pin A2) is pre-configured and reserved for electrochemical O₂ sensing (ME2-O2 / Grove O₂), deferred from Phase 1 due to undergraduate component budget constraints.
 
 ---
 
@@ -56,13 +56,15 @@ By combining the high-capacity deterministic data acquisition of an **Arduino Me
 
 ```mermaid
 flowchart TD
-    subgraph Sensing_Layer["Sensing Layer"]
+    subgraph Sensing_Layer["Sensing Layer (Active Phase 1)"]
         MQ135["MQ-135 (Air Quality)"]
         MQ2["MQ-2 (Combustible Gas)"]
-        O2["O2 Sensor Module"]
         DUST["Sharp GP2Y1010 Dust Sensor"]
         DHT["DHT11 / DHT22 (Temp & Humidity)"]
+        O2["[Future Phase 2] ME2-O2 Sensor"]:::future
     end
+
+    classDef future stroke-dasharray: 5 5,stroke:#999,color:#777;
 
     subgraph Edge_Processing["Edge Processing Layer"]
         MEGA["Arduino Mega 2560 (ATmega2560)"]
@@ -120,7 +122,7 @@ AirGuard-IOT/
 | :--- | :--- | :--- | :--- |
 | **MQ-135** | AOUT | **A0** | Analog Air Quality Voltage |
 | **MQ-2** | AOUT | **A1** | Analog Gas Concentration Voltage |
-| **O₂ Sensor** | AOUT | **A2** | Analog Oxygen Concentration Voltage |
+| **O₂ Sensor (Phase 2 Upgrade)** | AOUT | **A2 (Reserved)** | Analog Oxygen Channel *(Reserved for Phase 2 ME2-O2 upgrade)* |
 | **Sharp GP2Y1010** | V0 / LED | **A3** / **D7** | Dust Analog Output & Optical LED Pulse Trigger |
 | **DHT11 / DHT22** | DATA | **D4** | Digital One-Wire Climate Telemetry |
 | **Active Buzzer** | POS (+) | **D8** | Acoustic Emergency Alarm Trigger |

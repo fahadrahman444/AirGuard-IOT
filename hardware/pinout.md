@@ -14,9 +14,7 @@ This document provides the hardware pin mapping and wiring schematic for the **A
 | **MQ-2 (Combustible Gas)** | VCC | 5V | — | Preheating required (~20s) |
 | | GND | GND | — | Common Ground |
 | | AOUT | **A1** | — | Analog Voltage Output |
-| **O₂ Sensor (Grove / ME2-O2)** | VCC | 5V | — | Electrochemical linear sensor |
-| | GND | GND | — | Common Ground |
-| | AOUT | **A2** | — | Linear voltage (0–25% O₂) |
+| **[RESERVED] O₂ Sensor** | — | **A2** | — | *Reserved for Phase 2 Future Upgrade* |
 | **Dust Sensor (Sharp GP2Y1010AU0F)** | VCC | 5V | — | Through 150Ω resistor & 220µF capacitor |
 | | GND | GND | — | Common Ground |
 | | LED Pin | **D7** | — | Pulse trigger pin (0.32ms pulse) |
@@ -35,7 +33,8 @@ This document provides the hardware pin mapping and wiring schematic for the **A
 | | TX | **Pin 19 (RX1)** | **TX** | Direct connection to Mega Pin 19 (3.3V logic read as HIGH) |
 
 > [!NOTE]
-> **No Physical LCD Needed**: All sensor telemetry and visual representations are rendered on the dedicated **Real-Time Web Application** dashboard, eliminating the 16×2 I2C LCD wiring.
+> * **No Physical LCD Needed**: All sensor telemetry and visual representations are rendered on the dedicated **Real-Time Web Application** dashboard.
+> * **O₂ Sensor Deferral**: The electrochemical O₂ sensor is earmarked for a future phase update due to budget constraints. Analog channel `A2` is kept reserved.
 
 ---
 
@@ -65,5 +64,5 @@ Arduino Mega Pin 18 (TX1) ---> [ 1kΩ Resistor ] ---> ESP8266 RX
 ## 3. Power Distribution Architecture
 
 * **Primary Input:** 5V / 2A External DC power supply via barrel jack or regulated USB.
-* **5V Rail:** Powers the Arduino Mega 2560, MQ-135, MQ-2, O2 sensor, Dust sensor, and active Buzzer.
+* **5V Rail:** Powers the Arduino Mega 2560, MQ-135, MQ-2, Dust sensor, and active Buzzer.
 * **3.3V Rail:** Dedicated regulated 3.3V supply (AMS1117-3.3 or external power module) powering the ESP8266 Wi-Fi module (supplying the required $\ge 250\text{mA}$ peak current during RF transmission).
