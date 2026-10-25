@@ -8,121 +8,121 @@
 
 Abrar Mahbub Tanim
 
-Lecturer
+Lecturer, Department of CSE
+University of Information Technology and Sciences (UITS)
+Permanent Campus: Baridhara Nayanagar, Dhaka-1212
 
-		**Submitted by:**
+		**Submitted by (Project Team):**
 
-Name: MD Fahad Rahman
+1. MD. Fahad Rahman (ID: 0432320005101071)
+2. Zannatul Nayem (ID: 0432320005101063)
+3. Shafayet Hossain Shafin (ID: 0432320005101088)
 
-ID: 0432320005101071
-
+Batch: 54th Batch
 Section: 6B1
-
 Department of CSE
-
-Autumn 26
-
-University of Information Technology and Sciences
-
-October 25, 2026
+Program: B.Sc. in Computer Science & Engineering
+Semester: 7th (Autumn 2026)
+University of Information Technology and Sciences (UITS)
+October 26, 2026
 
 ---
 
-# Project Title
-**AirGuard IoT:** An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using Arduino Uno and Cloud Computing
+# 1. Project Title
+**AirGuard IoT:** An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using Arduino Mega 2560, ESP8266, and Real-Time Web Application
 
 ---
 
-# Domain
-* **Primary Domain:** Environmental Monitoring & Public Health
-* **Secondary Domain:** Smart Home & Industrial Safety (aligned with Domain-Specific IoT Applications)
+# 2. Domain & Application Scope
+* **Primary Domain:** Environmental Sensing & Public Health (Aligned with Domain-Specific IoT Architectures).
+* **Secondary Domain:** Smart Campus & Industrial Safety (Targeted for UITS CSE Hardware/IoT Labs, Server Rooms & Academic Buildings).
 
 ---
 
-# Problem Statement
-Poor indoor and ambient air quality, undetected hazardous gas leakages (e.g., LPG, carbon monoxide, methane), and oxygen depletion present acute safety and long-term health risks in residential homes, educational laboratories, and industrial workplaces. Traditional detection methods rely on isolated, non-networked alarm units that lack:
-1. Real-time multi-parameter data aggregation (particulate dust, oxygen, hazardous gases, temperature, and humidity).
-2. Remote accessibility and persistent cloud data logging for trend evaluation.
-3. Early warning telemetry that notifies stakeholders before toxic gas concentrations or oxygen deficiencies reach critical thresholds.
+# 3. Problem Statement
+Dhaka consistently ranks among the world's most air-polluted metropolises, experiencing severe seasonal particulate spikes (PM2.5/PM10), combustible gas risks, and poor indoor air ventilation. Within enclosed institutional environments—such as UITS computer science laboratories, server clusters, and educational buildings—undetected hazardous gas leaks (LPG, carbon monoxide, methane) and oxygen depletion present acute respiratory risks and fire hazards. Conventional protection mechanisms suffer from severe architectural limitations:
+1. **Lack of Multi-Parameter Integration:** Traditional detectors operate as isolated units, unable to simultaneously sample particulate dust density, toxic/combustible gases, oxygen concentration, temperature, and humidity.
+2. **No Remote Telemetry or Cloud Logging:** Standard alarms are standalone buzzers lacking wireless connectivity or historical trend logs for predictive laboratory maintenance.
+3. **Delayed Emergency Response:** Off-premises university faculty, lab officers, and safety administrators receive no low-latency push notifications when dangerous conditions develop after hours.
 
 ---
 
-# Proposed Solution
-**AirGuard IoT** is an edge-to-cloud environmental monitoring and safety system engineered around the **Arduino Uno** platform paired with an **ESP8266 Wi-Fi** module. 
+# 4. Proposed Solution & System Architecture
+**AirGuard IoT** delivers a robust edge-to-cloud environmental safety platform engineered specifically for educational laboratories and institutional facilities, utilizing a high-performance **Arduino Mega 2560** (ATmega2560) paired with an **ESP8266 Wi-Fi** transceiver.
 
-The system collects real-time physical telemetry from an array of dedicated analog and digital environmental sensors:
-* Gas sensors (MQ-135 and MQ-2) for air pollution and combustible/toxic gas detection.
-* Electrochemical oxygen sensor for measuring O₂ concentration.
-* Optical dust sensor for particulate matter (PM) detection.
-* Digital climate sensor (DHT11/DHT22) for ambient temperature and relative humidity.
+The system captures multi-point physical telemetry from a synchronized multi-sensor array:
+* **MQ-135 Gas Sensor:** Detects air pollution, CO₂, NH₃, benzene, alcohol, and ambient smoke.
+* **MQ-2 Gas Sensor:** Detects combustible gas leaks (LPG, propane, methane, hydrogen).
+* **Electrochemical O₂ Sensor:** Measures atmospheric O₂ percentage (safe threshold $\ge 19.5\%$).
+* **Sharp GP2Y1010AU0F Optical Dust Sensor:** Quantifies airborne suspended particulates in $\mu\text{g/m}^3$.
+* **Digital Climate Sensor (DHT11/DHT22):** Logs ambient temperature and relative humidity.
 
-The sensor data is acquired and conditioned by the Arduino Uno, forwarded to the ESP8266 via UART Serial communication, and transmitted over 2.4 GHz Wi-Fi using lightweight **MQTT / HTTP** protocols to a cloud IoT platform (such as ThingSpeak or Adafruit IO). If any parameter violates predefined safety thresholds, the edge system immediately activates a local audio-visual alert (active buzzer and warning LEDs) while streaming high-priority alert triggers to the cloud dashboard.
-
----
-
-# Objectives
-1. **Multi-Parameter Environmental Sensing:** Continuously monitor Air Quality Index (AQI), hazardous gas levels, oxygen concentration (% O₂), airborne dust density, temperature, and relative humidity.
-2. **Early Gas Leakage & Toxic Gas Detection:** Rapidly detect combustible gases (LPG, methane) and smoke to mitigate domestic and industrial fire and poisoning hazards.
-3. **Edge-to-Cloud Telemetry:** Reliably transfer sensor metrics from the Arduino Uno to the cloud via the ESP8266 Wi-Fi transceiver utilizing lightweight IoT protocols.
-4. **Cloud Analytics & Visualization:** Present real-time telemetry graphs, status indicators, and historical logs on a user-friendly cloud dashboard.
-5. **Automated Dual-Layer Alerting:** Trigger instantaneous local audio-visual alarms (buzzer + LED indicators) and dispatch remote notifications when environmental thresholds are breached.
+The Arduino Mega 2560 executes deterministic analog/digital signal conditioning leveraging its 16 analog input channels and dedicated Hardware Serial UART. Structured JSON telemetry is streamed over Hardware `Serial1` directly to the ESP8266, eliminating software serial emulation overhead. The ESP8266 transmits this telemetry over 2.4 GHz campus Wi-Fi using lightweight MQTT/HTTP protocols to a dedicated, custom-developed **Real-Time Web Application**. The web platform delivers interactive gauges, historical charting, and live remote alerts, while local audio-visual buzzers and LEDs provide immediate on-site safety warning.
 
 ---
 
-# Hardware Requirements
-* **Microcontroller:** Arduino Uno R3 (ATmega328P) — Central edge data acquisition and processing unit.
-* **Connectivity Transceiver:** ESP8266 Wi-Fi Module (ESP-01 / NodeMCU Shield) — Serial-to-Wi-Fi gateway.
-* **Environmental & Gas Sensors:**
-  * **MQ-135:** Air quality sensor (detects CO₂, NH₃, alcohol, benzene, and smoke).
-  * **MQ-2:** Combustible gas sensor (detects LPG, propane, methane, hydrogen, and smoke).
-  * **O₂ Sensor Module:** Electrochemical oxygen sensor (measures atmospheric O₂ percentage).
-  * **Optical Dust Sensor:** Sharp GP2Y1010AU0F / Nova PM sensor (measures airborne particulate matter).
-  * **DHT11 / DHT22:** Digital sensor for ambient temperature and relative humidity.
-* **Actuators & Display:**
-  * 16x2 LCD Display with I2C module (for immediate on-site visual readings).
-  * Active 5V Buzzer (acoustic emergency alert).
-  * Status LEDs (Green = Safe, Yellow = Warning, Red = Danger).
-* **Power Supply & Miscellaneous:**
-  * 5V / 2A DC Power Adapter or 9V Battery with voltage regulator.
-  * Logic Level Converter / Resistor Voltage Divider (5V to 3.3V UART protection for ESP8266).
-  * Breadboard, jumper wires, and pull-up resistors.
+# 5. Project Objectives
+1. **Comprehensive Environmental Sensing:** Continuously quantify Air Quality Index (AQI), gas concentration (PPM), atmospheric O₂ levels (% O₂), suspended dust density ($\mu\text{g/m}^3$), ambient temperature, and relative humidity.
+2. **Early Gas Hazard Detection:** Rapidly detect combustible gas leaks (LPG, methane) and toxic smoke to prevent domestic fire outbreaks, equipment destruction, and asphyxiation accidents.
+3. **High-Throughput Hardware UART Gateway:** Establish reliable, jitter-free wireless data transfer between the Arduino Mega 2560 hardware Serial1 port and cloud brokers via the ESP8266 transceiver.
+4. **Custom Web Application Visualization:** Develop a responsive, full-featured web dashboard displaying real-time analytical metrics, interactive graphs, and historical logs, replacing restrictive on-site character LCDs.
+5. **Automated Dual-Layer Alarming:** Execute immediate local acoustic/visual alert sequences (active buzzer + tri-color LEDs) alongside real-time web socket/cloud alert banners when safety thresholds are breached.
 
 ---
 
-# Software and Technologies
-* **Embedded Development & Firmware:**
-  * **Arduino IDE:** C / C++ embedded programming.
-  * **Key Firmware Libraries:** `WiFiClient.h`, `PubSubClient.h` (MQTT), `DHT.h`, `LiquidCrystal_I2C.h`, `SoftwareSerial.h`.
-* **IoT Communication Protocols:**
-  * **MQTT (Message Queuing Telemetry Transport):** Lightweight publish-subscribe protocol for low-bandwidth cloud messaging.
-  * **HTTP / REST API:** Secure POST telemetry transmission.
-  * **UART / Serial:** Microcontroller-to-Wi-Fi inter-module communication.
-* **Cloud & Visualization Platform:**
-  * **ThingSpeak / Adafruit IO / Blynk Cloud:** Cloud broker, live metric charting, data storage, and automated notification triggers.
+# 6. Hardware Requirements & Component Specifications
+* **Microcontroller Board:** Arduino Mega 2560 (ATmega2560, 16 MHz, 256 KB Flash, 8 KB SRAM, 4 Hardware UARTs, 16 Analog Inputs) — High-capacity edge data acquisition and processing engine.
+* **Wireless Transceiver Module:** ESP8266 (ESP-01 / NodeMCU Shield) — Serial-to-Wi-Fi gateway communicating over 2.4 GHz 802.11 b/g/n for cloud telemetry.
+* **Environmental & Gas Sensor Suite:**
+  * **MQ-135 Gas Sensor:** Air quality sensor detecting CO₂, NH₃, benzene, alcohol, and ambient hazardous smoke.
+  * **MQ-2 Gas Sensor:** Combustible gas sensor detecting LPG, propane, methane, hydrogen, and combustible gas leaks.
+  * **Electrochemical O₂ Sensor Module:** Measures ambient atmospheric oxygen levels with calibrated linear output (safe threshold $\ge 19.5\%$ O₂).
+  * **Optical Dust Sensor (Sharp GP2Y1010AU0F):** Infrared optical particulate sensor quantifying fine PM2.5 / PM10 density measurement in $\mu\text{g/m}^3$.
+  * **Climate Sensor (DHT11 / DHT22):** Calibrated digital sensor logging relative humidity and ambient temperature.
+* **Local Actuators & On-Site Indicators:** 5V active acoustic buzzer for immediate emergency warning, and tri-color status LEDs (Green = Normal, Yellow = Warning, Red = Critical Danger).
+* **Power & Interface Accessories:** Regulated 5V/2A DC power supply, 3.3V logic level divider (resistor network protecting ESP8266 RX), solderless breadboard, and jumper wires.
 
 ---
 
-# Feasibility Analysis
-* **Technical Feasibility:** The architecture utilizes industry-standard, well-documented components. The Arduino Uno readily interfaces with analog/digital sensor pins, and the ESP8266 provides robust Wi-Fi telemetry using standard AT-commands or serial bridge firmware.
-* **Economic Feasibility:** The system is built with readily available, cost-effective commercial-off-the-shelf (COTS) sensors and microcontrollers, making it substantially cheaper than proprietary commercial air-quality and gas detection systems.
-* **Operational Feasibility:** The device requires standard 5V USB/DC power and a 2.4 GHz Wi-Fi hotspot. Setup is plug-and-play with minimal calibration and maintenance required for continuous indoor or laboratory monitoring.
+# 7. Software, Firmware & Web Stack
+* **Embedded Firmware:** Arduino IDE (C / Embedded C++) utilizing hardware UART interrupts and non-blocking sensor sampling algorithms.
+* **Firmware Libraries:** `WiFiClient.h`, `PubSubClient.h` (MQTT), and `DHT.h` (eliminating `SoftwareSerial.h` and `LiquidCrystal_I2C.h` for maximum efficiency).
+* **Communication Protocols:** MQTT (Message Queuing Telemetry Transport) for low-latency publish/subscribe messaging, HTTP REST API POST backup, and Hardware UART Serial communication.
+* **Real-Time Web Application Stack:** Modern responsive web dashboard built with HTML5/CSS3, JavaScript (React / Chart.js / WebSockets), displaying live gauge dials, real-time pollution time-series, historical telemetry archives, and threshold alert banners.
 
 ---
 
-# Project Scope and Limitations
-### Project Scope:
-* Real-time monitoring of indoor living spaces, science/computer laboratories, and commercial kitchens.
-* Multi-sensor data synchronization with cloud dashboards for remote observation.
-* Dual-tier alarming (on-site buzzer/LEDs and remote cloud status indication).
-
-### Limitations:
-* **Memory & Processing Constraints:** The Arduino Uno possesses limited SRAM (2 KB) and Flash (32 KB); intensive networking stacks are handled by the ESP8266.
-* **Sensor Warm-up Time:** Metal oxide semiconductor (MQ) sensors require a preheating stabilization cycle (approx. 20–30 seconds) upon power-up for calibrated accuracy.
-* **Network Dependency:** Cloud logging and remote telemetry require an active 2.4 GHz Wi-Fi Internet connection (local audio-visual alarms function independently of internet availability).
+# 8. Feasibility Analysis
+* **Technical Feasibility:** The Arduino Mega 2560 provides 4x more SRAM (8 KB), 8x more flash memory (256 KB), and 4 hardware serial ports compared to entry-level boards, effortlessly handling multi-sensor calculations while the web application provides scalable multi-user access without hardware screen limits.
+* **Economic Feasibility:** The system is built entirely from accessible commercial-off-the-shelf (COTS) components. Eliminating the hardware character LCD simplifies the wiring and reduces hardware failure points while shifting visual presentation to an accessible, zero-marginal-cost web application.
+* **Operational Feasibility:** The system requires standard 5V power and a 2.4 GHz Wi-Fi hotspot. Laboratory stakeholders and students can inspect live environmental metrics on any smartphone, tablet, or PC browser without needing to physically stand next to the device.
 
 ---
 
-# Expected Outcome
-1. A fully assembled and operational hardware prototype integrating Arduino Uno, ESP8266, and 5 distinct sensing modules.
-2. A live cloud-based monitoring dashboard displaying real-time numerical and graphical telemetry of air purity, gas concentration, oxygen percentage, dust levels, temperature, and humidity.
-3. An automated safety response system that sounds local alarms and updates cloud alert flags within 2 seconds of detecting hazardous gas concentrations or oxygen deficiencies.
+# 9. Project Scope & Limitations
+* **Project Scope:** Designed for real-time monitoring across UITS computer science laboratories, server rooms, university project exhibition halls, and residential living spaces.
+* **Processing Headroom:** The Arduino Mega 2560 provides ample memory headroom, ensuring zero risk of SRAM stack collision during long-duration multi-sensor sampling.
+* **Sensor Stabilization Time:** Metal-oxide semiconductor (MQ) sensors require a preheating burn-in stabilization period (~20-30 seconds) upon initial boot.
+* **Network Dependency:** Cloud logging and web application telemetry require active Wi-Fi internet connectivity. However, local audio-visual alarm functions (buzzer & LEDs) operate completely autonomously even when offline.
+
+---
+
+# 10. Expected Outcome & Deliverables
+1. **Functional Hardware Prototype:** A fully assembled hardware station integrating the Arduino Mega 2560, ESP8266, and 5 distinct environmental sensing modules.
+2. **Interactive Real-Time Web Application:** A responsive, feature-rich web dashboard displaying live gauges, time-series telemetry plots, historical logs, and safety indicator cards for air quality, gases, oxygen, dust, and climate.
+3. **Sub-2s Emergency Safety Alarming:** An automated safety response mechanism sounding local sirens and streaming web alert flags within 2 seconds of threshold violations.
+
+---
+
+# 11. Team Work Distribution & Responsibilities
+* **MD. Fahad Rahman (0432320005101071):** Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, O2, GP2Y1010AU0F, DHT), Arduino Mega 2560 firmware engineering, and hardware serial packetization.
+* **Zannatul Nayem (0432320005101063):** ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.
+* **Shafayet Hossain Shafin (0432320005101088):** Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.
+
+---
+
+# 12. Project Implementation Milestones
+* **Phase 1 (Weeks 1–3):** Component procurement, sensor testing, calibration curves generation, and initial Mega 2560 breadboard prototyping.
+* **Phase 2 (Weeks 4–6):** Arduino Mega 2560 edge conditioning logic, ESP8266 Hardware Serial1 bridge development, and local buzzer/LED alarm integration.
+* **Phase 3 (Weeks 7–9):** MQTT publish-subscribe pipeline setup, Web Application dashboard construction (live gauges, charts, alert banners), and cloud backend deployment.
+* **Phase 4 (Weeks 10–12):** System enclosure assembly, lab benchmarking under simulated gas/smoke events, end-to-end web testing, final report preparation, and presentation.

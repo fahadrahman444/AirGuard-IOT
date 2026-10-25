@@ -1,51 +1,54 @@
 /**
  * AirGuard IoT - Arduino Edge Node
- * Hardware: Arduino Uno R3
- * Authors: MD Fahad Rahman (ID: 0432320005101071)
+ * Hardware: Arduino Mega 2560 (ATmega2560)
+ * Authors: 
+ *   1. MD. Fahad Rahman (ID: 0432320005101071)
+ *   2. Zannatul Nayem (ID: 0432320005101063)
+ *   3. Shafayet Hossain Shafin (ID: 0432320005101088)
+ * Batch: 54th Batch | Section: 6B1
  * Course: CSE402 - Internet of Things Lab (Autumn 26)
- * Institution: University of Information Technology and Sciences
+ * Institution: University of Information Technology and Sciences (UITS)
  */
 
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 #include <DHT.h>
-#include <SoftwareSerial.h>
 
-// --- Pin Definitions ---
-#define PIN_MQ135      A0
-#define PIN_MQ2        A1
-#define PIN_O2         A2
-#define PIN_DUST_VO    A3
-#define PIN_DHT        4
-#define PIN_DUST_LED   7
-#define PIN_BUZZER     8
-#define PIN_LED_GREEN  9
-#define PIN_LED_YELLOW 10
-#define PIN_LED_RED    11
+// --- Pin Definitions on Arduino Mega 2560 ---
+#define PIN_MQ135      A0  // Air Quality (CO2, NH3, Smoke)
+#define PIN_MQ2        A1  // Combustible Gas Leakage (LPG, CH4)
+#define PIN_O2         A2  // Electrochemical O2 Sensor
+#define PIN_DUST_VO    A3  // Sharp GP2Y1010AU0F Analog Output
+#define PIN_DHT        4   // DHT11 / DHT22 Digital One-Wire
+#define PIN_DUST_LED   7   // Sharp Optical Dust Pulse Trigger
+#define PIN_BUZZER     8   // Active 5V Acoustic Buzzer
+#define PIN_LED_GREEN  9   // Normal Status Indicator
+#define PIN_LED_YELLOW 10  // Warning Status Indicator
+#define PIN_LED_RED    11  // Critical Emergency Indicator
 
-// SoftwareSerial for ESP8266 Gateway (RX=2, TX=3)
-SoftwareSerial espSerial(2, 3);
+// Communication with ESP8266 Gateway:
+// Arduino Mega 2560 features 4 Hardware Serial UARTs!
+// Serial  -> USB Debug Monitor to PC
+// Serial1 -> Hardware Serial on Pin 19 (RX1) and Pin 18 (TX1) to ESP8266
 
 // DHT Configuration
 #define DHTTYPE DHT11
 DHT dht(PIN_DHT, DHTTYPE);
 
-// 16x2 I2C LCD (Standard address 0x27 or 0x3F)
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-// Timing variables for non-blocking execution
+// Non-blocking sampling interval (every 3000ms)
 unsigned long lastReadTime = 0;
-const unsigned long READ_INTERVAL = 3000; // Sample every 3 seconds
+const unsigned long READ_INTERVAL = 3000;
 
-// Thresholds for warning and danger
-const int THRESHOLD_MQ135_WARN = 300;
+// Safety thresholds
+const int THRESHOLD_MQ135_WARN   = 300;
 const int THRESHOLD_MQ135_DANGER = 500;
 const int THRESHOLD_MQ2_DANGER   = 400;
-const float THRESHOLD_O2_MIN     = 19.5; // Normal air is ~20.9% O2
+const float THRESHOLD_O2_MIN     = 19.5; // Normal atmospheric air is ~20.9% O2
 
 void setup() {
+  // Initialize USB Serial for PC debugging
   Serial.begin(9600);
-  espSerial.begin(9600);
+
+  // Initialize Hardware Serial1 for ESP8266 Wi-Fi Gateway
+  Serial1.begin(9600);
 
   pinMode(PIN_DUST_LED, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
@@ -57,19 +60,25 @@ void setup() {
   digitalWrite(PIN_BUZZER, LOW);
 
   dht.begin();
-  lcd.init();
-  lcd.backlight();
 
-  lcd.setCursor(0, 0);
-  lcd.print("AirGuard IoT");
-  lcd.setCursor(0, 1);
-  lcd.print("Initializing...");
-  delay(1500);
-  lcd.clear();
+  Serial.println(F("=================================================="));
+  Serial.println(F("AirGuard IoT - Arduino Mega 2560 Edge Station"));
+  Serial.println(F("Telemetry is streamed to Real-Time Web Application"));
+  Serial.println(F("=================================================="));
+
+  // Visual confirmation on boot
+  digitalWrite(PIN_LED_GREEN, HIGH);
+  delay(500);
+  digitalWrite(PIN_LED_YELLOW, HIGH);
+  delay(500);
+  digitalWrite(PIN_LED_RED, HIGH);
+  delay(500);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_RED, LOW);
 }
 
 float readDustDensity() {
-  // Pulse Sharp GP2Y1010AU0F LED for 0.32ms
+  // Sharp GP2Y1010AU0F 0.32ms pulse sequence
   digitalWrite(PIN_DUST_LED, LOW);
   delayMicroseconds(280);
   int voVal = analogRead(PIN_DUST_VO);
@@ -78,7 +87,7 @@ float readDustDensity() {
   delayMicroseconds(9680);
 
   float voltage = voVal * (5.0 / 1024.0);
-  // Linear approximation: dust (mg/m3) = 0.17 * voltage - 0.1
+  // Linear dust approximation: mg/m3 = 0.17 * voltage - 0.1
   float dustVal = (0.17 * voltage - 0.1) * 1000.0; // convert to ug/m3
   return (dustVal > 0.0) ? dustVal : 0.0;
 }
@@ -86,7 +95,7 @@ float readDustDensity() {
 float readO2Percentage() {
   int raw = analogRead(PIN_O2);
   float voltage = raw * (5.0 / 1024.0);
-  // Standard electrochemical sensor mapping (approx 20.9% at calibration)
+  // Standard electrochemical sensor linear curve
   float o2 = (voltage / 2.0) * 20.9;
   return o2;
 }
@@ -116,36 +125,6 @@ void updateAlarms(int mq135Val, int mq2Val, float o2Val) {
   }
 }
 
-void displayLCD(float temp, float hum, int mq135, int mq2, float o2, float dust) {
-  static bool pageToggle = false;
-  lcd.clear();
-  if (!pageToggle) {
-    lcd.setCursor(0, 0);
-    lcd.print("T:");
-    lcd.print((int)temp);
-    lcd.print("C H:");
-    lcd.print((int)hum);
-    lcd.print("%");
-
-    lcd.setCursor(0, 1);
-    lcd.print("AQ:");
-    lcd.print(mq135);
-    lcd.print(" Gs:");
-    lcd.print(mq2);
-  } else {
-    lcd.setCursor(0, 0);
-    lcd.print("O2:");
-    lcd.print(o2, 1);
-    lcd.print("%");
-
-    lcd.setCursor(0, 1);
-    lcd.print("PM:");
-    lcd.print((int)dust);
-    lcd.print("ug/m3");
-  }
-  pageToggle = !pageToggle;
-}
-
 void loop() {
   unsigned long now = millis();
   if (now - lastReadTime >= READ_INTERVAL) {
@@ -163,11 +142,11 @@ void loop() {
       humidity = 0.0;
     }
 
+    // Update on-site acoustic and LED indicators
     updateAlarms(mq135Value, mq2Value, o2Value);
-    displayLCD(temperature, humidity, mq135Value, mq2Value, o2Value, dustDensity);
 
-    // Format telemetry payload as JSON
-    // {"temp":28.5,"hum":65.0,"aqi":180,"gas":95,"o2":20.8,"dust":34.2}
+    // Format structured JSON telemetry for Web Application & Cloud broker
+    // Example: {"temp":28.5,"hum":65.0,"aqi":180,"gas":95,"o2":20.8,"dust":34.2}
     String jsonPayload = "{";
     jsonPayload += "\"temp\":" + String(temperature, 1) + ",";
     jsonPayload += "\"hum\":" + String(humidity, 1) + ",";
@@ -177,8 +156,10 @@ void loop() {
     jsonPayload += "\"dust\":" + String(dustDensity, 1);
     jsonPayload += "}";
 
-    // Transmit to ESP8266 and USB debug terminal
-    espSerial.println(jsonPayload);
+    // Transmit over Hardware Serial1 directly to ESP8266 Wi-Fi Gateway
+    Serial1.println(jsonPayload);
+
+    // Print to USB Serial for developer console debugging
     Serial.println(jsonPayload);
   }
 }

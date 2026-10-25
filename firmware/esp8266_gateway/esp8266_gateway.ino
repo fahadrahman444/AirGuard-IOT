@@ -1,7 +1,11 @@
 /**
  * AirGuard IoT - ESP8266 Wi-Fi & MQTT Cloud Gateway
  * Hardware: ESP8266 (NodeMCU / ESP-01 / Wemos D1 Mini)
- * Authors: MD Fahad Rahman (ID: 0432320005101071)
+ * Authors: 
+ *   1. MD. Fahad Rahman (ID: 0432320005101071)
+ *   2. Zannatul Nayem (ID: 0432320005101063)
+ *   3. Shafayet Hossain Shafin (ID: 0432320005101088)
+ * Batch: 54th Batch | Section: 6B1
  * Course: CSE402 - Internet of Things Lab (Autumn 26)
  * Institution: University of Information Technology and Sciences
  */
