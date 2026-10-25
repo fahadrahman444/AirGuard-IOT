@@ -292,11 +292,11 @@ function generateUITSStudentProposal(outputPath) {
     renderBullet('Shafayet Hossain Shafin (0432320005101088):', 'Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.', 15, 2.0, 0.22);
 
     // --- 12. Project Implementation Milestones ---
-    renderSectionHeader('12. Project Implementation Milestones', 0.42, 0.2);
-    renderBullet('Phase 1 (Weeks 1–3):', 'Component procurement, sensor testing, calibration curves generation, and initial Mega 2560 breadboard prototyping.', 15, 2.0, 0.22);
-    renderBullet('Phase 2 (Weeks 4–6):', 'Arduino Mega 2560 edge conditioning logic, ESP8266 Hardware Serial1 bridge development, and local buzzer/LED alarm integration.', 15, 2.0, 0.22);
-    renderBullet('Phase 3 (Weeks 7–9):', 'MQTT publish-subscribe pipeline setup, Web Application dashboard construction (live gauges, charts, alert banners), and cloud backend deployment.', 15, 2.0, 0.22);
-    renderBullet('Phase 4 (Weeks 10–12):', 'System enclosure assembly, lab benchmarking under simulated gas/smoke events, end-to-end web testing, final report preparation, and Phase 2 O2 sensor upgrade documentation.', 15, 2.0, 0.22);
+    renderSectionHeader('12. Project Implementation Milestones (July – Nov 15, 2026)', 0.42, 0.2);
+    renderBullet('Phase 1 (July – August 2026):', 'Requirements analysis, COTS sensor procurement (MQ-135, MQ-2, GP2Y1010AU0F, DHT), sensor burn-in, calibration testing, and breadboard baseline prototyping.', 15, 2.0, 0.22);
+    renderBullet('Phase 2 (September 2026):', 'Arduino Mega 2560 edge acquisition firmware, Hardware Serial1 UART data packetization, and autonomous on-site audio-visual buzzer/LED alarm circuit integration.', 15, 2.0, 0.22);
+    renderBullet('Phase 3 (October 2026):', 'ESP8266 Wi-Fi gateway firmware, MQTT cloud publish/subscribe pipeline configuration, and interactive Real-Time Web Application dashboard development.', 15, 2.0, 0.22);
+    renderBullet('Phase 4 (Nov 1 – Nov 15, 2026):', 'Hardware enclosure packaging, end-to-end lab benchmarking under simulated gas/smoke, system calibration, and first functional prototype ready before Nov 15, 2026.', 15, 2.0, 0.22);
 
     // Running Header (Pages 2 & 3) & Running Footer (All Pages)
     const range = doc.bufferedPageRange();

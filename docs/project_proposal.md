@@ -121,8 +121,8 @@ The Arduino Mega 2560 executes deterministic analog/digital signal conditioning 
 
 ---
 
-# 12. Project Implementation Milestones
-* **Phase 1 (Weeks 1–3):** Component procurement, sensor testing, calibration curves generation, and initial Mega 2560 breadboard prototyping.
-* **Phase 2 (Weeks 4–6):** Arduino Mega 2560 edge conditioning logic, ESP8266 Hardware Serial1 bridge development, and local buzzer/LED alarm integration.
-* **Phase 3 (Weeks 7–9):** MQTT publish-subscribe pipeline setup, Web Application dashboard construction (live gauges, charts, alert banners), and cloud backend deployment.
-* **Phase 4 (Weeks 10–12):** System enclosure assembly, lab benchmarking under simulated gas/smoke events, end-to-end web testing, final report preparation, and Phase 2 O₂ sensor upgrade documentation.
+# 12. Project Implementation Milestones (July – Nov 15, 2026)
+* **Phase 1 (July – August 2026):** Requirements analysis, COTS sensor procurement (MQ-135, MQ-2, GP2Y1010AU0F, DHT), sensor burn-in, calibration testing, and breadboard baseline prototyping.
+* **Phase 2 (September 2026):** Arduino Mega 2560 edge acquisition firmware, Hardware Serial1 UART data packetization, and autonomous on-site audio-visual buzzer/LED alarm circuit integration.
+* **Phase 3 (October 2026):** ESP8266 Wi-Fi gateway firmware, MQTT cloud publish/subscribe pipeline configuration, and interactive Real-Time Web Application dashboard development.
+* **Phase 4 (November 1 – November 15, 2026):** Hardware enclosure packaging, end-to-end lab benchmarking under simulated gas/smoke, system calibration, and first functional prototype ready before November 15, 2026.
