@@ -9,7 +9,7 @@ function generateUITSStudentProposal(outputPath) {
     // A4: 595.28 x 841.89 pt
     const doc = new PDFDocument({
       size: 'A4',
-      margins: { top: 32, bottom: 35, left: 50, right: 50 },
+      margins: { top: 48, bottom: 48, left: 50, right: 50 },
       autoFirstPage: false,
       bufferPages: true
     });
@@ -30,7 +30,7 @@ function generateUITSStudentProposal(outputPath) {
     const leftMargin = 50;
     const rightMargin = 50;
     const contentWidth = pageWidth - leftMargin - rightMargin; // 495.28 pt
-    const bottomLimit = pageHeight - 40; // 801 pt
+    const bottomLimit = pageHeight - 48; // 793.89 pt
 
     function checkSpace(needed) {
       if (doc.y + needed > bottomLimit) {
@@ -38,30 +38,30 @@ function generateUITSStudentProposal(outputPath) {
       }
     }
 
-    function renderSectionHeader(title) {
+    function renderSectionHeader(title, spaceBefore = 0.4, spaceAfter = 0.22) {
       checkSpace(35);
-      doc.moveDown(0.42);
+      doc.moveDown(spaceBefore);
       doc.font('Helvetica-Bold')
-         .fontSize(12)
+         .fontSize(11.5)
          .fillColor(PRIMARY)
          .text(title, leftMargin, doc.y, { width: contentWidth, align: 'left' });
-      doc.moveDown(0.24);
+      doc.moveDown(spaceAfter);
     }
 
-    function renderParagraph(text) {
+    function renderParagraph(text, lineGap = 2.0, moveAfter = 0.22) {
       checkSpace(24);
       doc.font('Helvetica')
-         .fontSize(9.5)
+         .fontSize(9.2)
          .fillColor(DARK_TEXT)
          .text(text, leftMargin, doc.y, {
            width: contentWidth,
            align: 'left',
-           lineGap: 2.2
+           lineGap: lineGap
          });
-      doc.moveDown(0.25);
+      doc.moveDown(moveAfter);
     }
 
-    function renderBullet(prefix, text, indent = 15) {
+    function renderBullet(prefix, text, indent = 15, lineGap = 1.9, moveAfter = 0.2) {
       checkSpace(18);
       const bulletX = leftMargin + indent - 10;
       const textX = leftMargin + indent;
@@ -69,47 +69,47 @@ function generateUITSStudentProposal(outputPath) {
       const startY = doc.y;
 
       doc.font('Helvetica-Bold')
-         .fontSize(9.5)
+         .fontSize(9.2)
          .fillColor(DARK_TEXT)
          .text('•', bulletX, startY);
 
       if (prefix && text) {
         doc.font('Helvetica-Bold')
-           .fontSize(9.5)
+           .fontSize(9.2)
            .fillColor(DARK_TEXT)
            .text(prefix + ' ', textX, startY, {
              width: textWidth,
              continued: true,
-             lineGap: 2.1
+             lineGap: lineGap
            });
         doc.font('Helvetica')
-           .fontSize(9.5)
+           .fontSize(9.2)
            .fillColor(DARK_TEXT)
            .text(text, {
              width: textWidth,
              align: 'left',
-             lineGap: 2.1
+             lineGap: lineGap
            });
       } else if (prefix && !text) {
         doc.font('Helvetica-Bold')
-           .fontSize(9.5)
+           .fontSize(9.2)
            .fillColor(DARK_TEXT)
            .text(prefix, textX, startY, {
              width: textWidth,
              align: 'left',
-             lineGap: 2.1
+             lineGap: lineGap
            });
       } else {
         doc.font('Helvetica')
-           .fontSize(9.5)
+           .fontSize(9.2)
            .fillColor(DARK_TEXT)
            .text(text, textX, startY, {
              width: textWidth,
              align: 'left',
-             lineGap: 2.1
+             lineGap: lineGap
            });
       }
-      doc.moveDown(0.23);
+      doc.moveDown(moveAfter);
     }
 
     // ==========================================
@@ -118,44 +118,44 @@ function generateUITSStudentProposal(outputPath) {
     doc.addPage();
 
     // 1. Header: UITS Logo & University Identity
-    const logoWidth = 140;
+    const logoWidth = 136;
     const logoX = (pageWidth - logoWidth) / 2;
-    const logoY = 20;
+    const logoY = 48; // Scaled top margin matching left margin (50 pt)
 
     if (fs.existsSync(LOGO_PATH)) {
       doc.image(LOGO_PATH, logoX, logoY, { width: logoWidth });
     }
 
     doc.font('Helvetica-Bold')
-       .fontSize(12.5)
+       .fontSize(12)
        .fillColor(PRIMARY)
-       .text('UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)', leftMargin, 72, { width: contentWidth, align: 'center' });
+       .text('UNIVERSITY OF INFORMATION TECHNOLOGY AND SCIENCES (UITS)', leftMargin, 100, { width: contentWidth, align: 'center' });
+
+    doc.font('Helvetica-Bold')
+       .fontSize(9.2)
+       .fillColor(MUTED)
+       .text('Department of Computer Science & Engineering (CSE)', leftMargin, 115, { width: contentWidth, align: 'center' });
 
     doc.font('Helvetica-Bold')
        .fontSize(9.5)
-       .fillColor(MUTED)
-       .text('Department of Computer Science & Engineering (CSE)', leftMargin, 87, { width: contentWidth, align: 'center' });
-
-    doc.font('Helvetica-Bold')
-       .fontSize(10)
        .fillColor(SECONDARY)
-       .text('Course Code: CSE402   •   Course Title: Internet of Things Lab', leftMargin, 101, { width: contentWidth, align: 'center' });
+       .text('Course Code: CSE402   •   Course Title: Internet of Things Lab', leftMargin, 129, { width: contentWidth, align: 'center' });
 
     doc.font('Helvetica-Bold')
-       .fontSize(15.5)
+       .fontSize(14.5)
        .fillColor(PRIMARY)
-       .text('PROJECT PROPOSAL', leftMargin, 116, { width: contentWidth, align: 'center' });
+       .text('PROJECT PROPOSAL', leftMargin, 144, { width: contentWidth, align: 'center' });
 
     // Hairline divider
     doc.strokeColor(LINE_COLOR)
        .lineWidth(0.8)
-       .moveTo(leftMargin, 137)
-       .lineTo(pageWidth - rightMargin, 137)
+       .moveTo(leftMargin, 164)
+       .lineTo(pageWidth - rightMargin, 164)
        .stroke();
 
     // 2. Academic Submission Cards (Panel Box with Team Members)
-    const cardY = 142;
-    const cardHeight = 94;
+    const cardY = 169;
+    const cardHeight = 90;
     const colWidth = (contentWidth - 16) / 2;
     const leftColX = leftMargin + 10;
     const rightColX = leftMargin + colWidth + 12;
@@ -164,136 +164,139 @@ function generateUITSStudentProposal(outputPath) {
        .fillAndStroke(BG_BOX, LINE_COLOR);
 
     // Left Column: Submitted to
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(SECONDARY).text('SUBMITTED TO:', leftColX, cardY + 7);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(PRIMARY).text('Abrar Mahbub Tanim', leftColX, cardY + 21);
-    doc.font('Helvetica').fontSize(9).fillColor(MUTED).text('Lecturer, Department of CSE', leftColX, cardY + 35);
-    doc.font('Helvetica').fontSize(9).fillColor(MUTED).text('University of Information Technology & Sciences (UITS)', leftColX, cardY + 48);
-    doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text('Permanent Campus: Baridhara Nayanagar, Dhaka-1212', leftColX, cardY + 62);
-    doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Submission Date: October 26, 2026', leftColX, cardY + 76);
+    doc.font('Helvetica-Bold').fontSize(8.2).fillColor(SECONDARY).text('SUBMITTED TO:', leftColX, cardY + 6);
+    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(PRIMARY).text('Abrar Mahbub Tanim', leftColX, cardY + 19);
+    doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text('Lecturer, Department of CSE', leftColX, cardY + 32);
+    doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text('University of Information Technology & Sciences (UITS)', leftColX, cardY + 45);
+    doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Permanent Campus: Baridhara Nayanagar, Dhaka-1212', leftColX, cardY + 58);
+    doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Submission Date: October 26, 2026', leftColX, cardY + 72);
 
     // Right Column: Submitted by (Team Members)
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(SECONDARY).text('SUBMITTED BY (PROJECT TEAM):', rightColX, cardY + 7);
+    doc.font('Helvetica-Bold').fontSize(8.2).fillColor(SECONDARY).text('SUBMITTED BY (PROJECT TEAM):', rightColX, cardY + 6);
 
     // Member 1
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(PRIMARY).text('1. MD. Fahad Rahman', rightColX, cardY + 21, { continued: true });
-    doc.font('Helvetica').fontSize(8.5).fillColor(DARK_TEXT).text('  (ID: 0432320005101071)');
+    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('1. MD. Fahad Rahman', rightColX, cardY + 19, { continued: true });
+    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101071)');
 
     // Member 2
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(PRIMARY).text('2. Zannatul Nayem', rightColX, cardY + 35, { continued: true });
-    doc.font('Helvetica').fontSize(8.5).fillColor(DARK_TEXT).text('  (ID: 0432320005101063)');
+    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('2. Zannatul Nayem', rightColX, cardY + 32, { continued: true });
+    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101063)');
 
     // Member 3
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(PRIMARY).text('3. Shafayet Hossain Shafin', rightColX, cardY + 49, { continued: true });
-    doc.font('Helvetica').fontSize(8.5).fillColor(DARK_TEXT).text('  (ID: 0432320005101088)');
+    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('3. Shafayet Hossain Shafin', rightColX, cardY + 45, { continued: true });
+    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101088)');
 
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(DARK_TEXT)
-       .text('Batch: 54th Batch  |  Section: 6B1  |  Autumn 2026', rightColX, cardY + 65);
+    doc.font('Helvetica-Bold').fontSize(8.2).fillColor(DARK_TEXT)
+       .text('Batch: 54th Batch  |  Section: 6B1  |  Autumn 2026', rightColX, cardY + 60);
     doc.font('Helvetica').fontSize(8).fillColor(MUTED)
-       .text('Program: B.Sc. in Computer Science & Engineering', rightColX, cardY + 77);
+       .text('Program: B.Sc. in Computer Science & Engineering', rightColX, cardY + 72);
 
-    doc.y = cardY + cardHeight + 10;
+    doc.y = cardY + cardHeight + 8;
 
     // --- 1. Project Title ---
-    renderSectionHeader('1. Project Title');
+    renderSectionHeader('1. Project Title', 0.25, 0.18);
     doc.font('Helvetica-Bold')
-       .fontSize(9.5)
+       .fontSize(9.2)
        .fillColor(PRIMARY)
        .text('AirGuard IoT: An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using Arduino Mega 2560, ESP8266, and Real-Time Web Application', leftMargin, doc.y, {
          width: contentWidth,
          align: 'left',
-         lineGap: 2.0
+         lineGap: 1.8
        });
-    doc.moveDown(0.24);
+    doc.moveDown(0.2);
 
     // --- 2. Domain & Application Scope ---
-    renderSectionHeader('2. Domain & Application Scope');
-    renderBullet('Primary Domain:', 'Environmental Sensing & Public Health (Aligned with Domain-Specific IoT Architectures).');
-    renderBullet('Secondary Domain:', 'Smart Campus & Industrial Safety (Targeted for UITS CSE Hardware/IoT Labs, Server Rooms & Academic Buildings).');
+    renderSectionHeader('2. Domain & Application Scope', 0.35, 0.18);
+    renderBullet('Primary Domain:', 'Environmental Sensing & Public Health (Aligned with Domain-Specific IoT Architectures).', 15, 1.8, 0.18);
+    renderBullet('Secondary Domain:', 'Smart Campus & Industrial Safety (Targeted for UITS CSE Hardware/IoT Labs, Server Rooms & Academic Buildings).', 15, 1.8, 0.18);
 
     // --- 3. Problem Statement ---
-    renderSectionHeader('3. Problem Statement');
-    renderParagraph('Dhaka consistently ranks among the worlds most air-polluted metropolises, experiencing severe seasonal particulate spikes (PM2.5/PM10), combustible gas risks, and poor indoor air ventilation. Within enclosed institutional environments—such as UITS computer science laboratories, server clusters, and educational buildings—undetected hazardous gas leaks (LPG, carbon monoxide, methane) and excessive airborne dust present acute respiratory risks and fire hazards. Conventional protection mechanisms suffer from severe architectural limitations:');
-    renderBullet('Lack of Multi-Parameter Integration:', 'Traditional detectors operate as isolated units, unable to simultaneously sample particulate dust density, toxic/combustible gases, ambient temperature, and relative humidity.');
-    renderBullet('No Remote Telemetry or Cloud Logging:', 'Standard alarms are standalone buzzers lacking wireless connectivity or historical trend logs for predictive laboratory maintenance.');
-    renderBullet('Delayed Emergency Response:', 'Off-premises university faculty, lab officers, and safety administrators receive no low-latency push notifications when dangerous conditions develop after hours.');
+    renderSectionHeader('3. Problem Statement', 0.35, 0.18);
+    renderParagraph('Dhaka consistently ranks among the worlds most air-polluted metropolises, experiencing severe seasonal particulate spikes (PM2.5/PM10), combustible gas risks, and poor indoor air ventilation. Within enclosed institutional environments—such as UITS computer science laboratories, server clusters, and educational buildings—undetected hazardous gas leaks (LPG, carbon monoxide, methane) and excessive airborne dust present acute respiratory risks and fire hazards. Conventional protection mechanisms suffer from severe architectural limitations:', 1.9, 0.18);
+    renderBullet('Lack of Multi-Parameter Integration:', 'Traditional detectors operate as isolated units, unable to simultaneously sample particulate dust density, toxic/combustible gases, ambient temperature, and relative humidity.', 15, 1.8, 0.18);
+    renderBullet('No Remote Telemetry or Cloud Logging:', 'Standard alarms are standalone buzzers lacking wireless connectivity or historical trend logs for predictive laboratory maintenance.', 15, 1.8, 0.18);
+    renderBullet('Delayed Emergency Response:', 'Off-premises university faculty, lab officers, and safety administrators receive no low-latency push notifications when dangerous conditions develop after hours.', 15, 1.8, 0.18);
 
     // --- 4. Proposed Solution & Architecture ---
-    renderSectionHeader('4. Proposed Solution & System Architecture');
-    renderParagraph('AirGuard IoT delivers a robust edge-to-cloud environmental safety platform engineered specifically for educational laboratories and institutional facilities, utilizing a high-performance Arduino Mega 2560 (ATmega2560) paired with an ESP8266 Wi-Fi gateway.');
-    renderParagraph('The system captures multi-point physical telemetry from a synchronized multi-sensor array: MQ-135 (air pollution/smoke/toxic vapor), MQ-2 (combustible LPG/methane leakage), a Sharp GP2Y1010AU0F optical dust sensor (quantifying suspended particulates in µg/m³), and a DHT11/DHT22 digital sensor (logging ambient temperature and relative humidity). The architecture features dedicated expansion routing on the Mega 2560 for future integration of an electrochemical O2 sensor in Phase 2.');
-    renderParagraph('The Arduino Mega 2560 executes deterministic analog/digital signal conditioning leveraging its 16 analog input channels and dedicated Hardware Serial UART. Structured JSON telemetry is streamed over Hardware Serial1 directly to the ESP8266, eliminating software serial emulation overhead. The ESP8266 transmits this telemetry over 2.4 GHz campus Wi-Fi using lightweight MQTT/HTTP protocols to a dedicated, custom-developed Real-Time Web Application. The web platform delivers interactive gauges, historical charting, and live remote alerts, while local audio-visual buzzers and LEDs provide immediate on-site safety warning.');
+    renderSectionHeader('4. Proposed Solution & System Architecture', 0.35, 0.18);
+    renderParagraph('AirGuard IoT delivers a robust edge-to-cloud environmental safety platform engineered specifically for educational laboratories and institutional facilities, utilizing a high-performance Arduino Mega 2560 (ATmega2560) paired with an ESP8266 Wi-Fi gateway.', 1.9, 0.18);
+    renderParagraph('The system captures multi-point physical telemetry from a synchronized multi-sensor array: MQ-135 (air pollution/smoke/toxic vapor), MQ-2 (combustible LPG/methane leakage), a Sharp GP2Y1010AU0F optical dust sensor (quantifying suspended particulates in µg/m³), and a DHT11/DHT22 digital sensor (logging ambient temperature and relative humidity). The architecture features dedicated expansion routing on the Mega 2560 for future integration of an electrochemical O2 sensor in Phase 2.', 1.9, 0.18);
+    renderParagraph('The Arduino Mega 2560 executes deterministic analog/digital signal conditioning leveraging its 16 analog input channels and dedicated Hardware Serial UART. Structured JSON telemetry is streamed over Hardware Serial1 directly to the ESP8266, eliminating software serial emulation overhead. The ESP8266 transmits this telemetry over 2.4 GHz campus Wi-Fi using lightweight MQTT/HTTP protocols to a dedicated, custom-developed Real-Time Web Application. The web platform delivers interactive gauges, historical charting, and live remote alerts, while local audio-visual buzzers and LEDs provide immediate on-site safety warning.', 1.9, 0.18);
 
     // ==========================================
     // PAGE 2: OBJECTIVES, HARDWARE, SOFTWARE (SECTIONS 5-7)
     // ==========================================
     doc.addPage();
-    doc.y = 42;
+    doc.y = 66; // Top margin matching page 1 (content begins cleanly below running header)
 
     // --- 5. Objectives ---
-    renderSectionHeader('5. Project Objectives');
-    renderBullet('Comprehensive Environmental Sensing:', 'Continuously quantify Air Quality Index (AQI), combustible gas concentration (PPM), suspended dust density (µg/m³), ambient temperature, and relative humidity.');
-    renderBullet('Early Gas Hazard Detection:', 'Rapidly detect combustible gas leaks (LPG, methane) and toxic smoke to prevent domestic fire outbreaks, equipment destruction, and asphyxiation accidents.');
-    renderBullet('High-Throughput Hardware UART Gateway:', 'Establish reliable, jitter-free wireless data transfer between the Arduino Mega 2560 hardware Serial1 port and cloud brokers via the ESP8266 transceiver.');
-    renderBullet('Custom Web Application Visualization:', 'Develop a responsive, full-featured web dashboard displaying real-time analytical metrics, interactive graphs, and historical logs, replacing restrictive on-site character LCDs.');
-    renderBullet('Automated Dual-Layer Alarming:', 'Execute immediate local acoustic/visual alert sequences (active buzzer + tri-color LEDs) alongside real-time web socket/cloud alert banners when safety thresholds are breached.');
+    renderSectionHeader('5. Project Objectives', 0.1, 0.25);
+    renderParagraph('The AirGuard IoT project is guided by the following key technical and laboratory deployment objectives:', 2.2, 0.26);
+    renderBullet('Comprehensive Environmental Sensing:', 'Continuously quantify Air Quality Index (AQI), combustible gas concentration (PPM), suspended dust density (µg/m³), ambient temperature, and relative humidity.', 15, 2.2, 0.28);
+    renderBullet('Early Gas Hazard Detection:', 'Rapidly detect combustible gas leaks (LPG, methane) and toxic smoke to prevent domestic fire outbreaks, equipment destruction, and asphyxiation accidents.', 15, 2.2, 0.28);
+    renderBullet('High-Throughput Hardware UART Gateway:', 'Establish reliable, jitter-free wireless data transfer between the Arduino Mega 2560 hardware Serial1 port and cloud brokers via the ESP8266 transceiver.', 15, 2.2, 0.28);
+    renderBullet('Custom Web Application Visualization:', 'Develop a responsive, full-featured web dashboard displaying real-time analytical metrics, interactive graphs, and historical logs, replacing restrictive on-site character LCDs.', 15, 2.2, 0.28);
+    renderBullet('Automated Dual-Layer Alarming:', 'Execute immediate local acoustic/visual alert sequences (active buzzer + tri-color LEDs) alongside real-time web socket/cloud alert banners when safety thresholds are breached.', 15, 2.2, 0.28);
 
     // --- 6. Hardware Requirements ---
-    renderSectionHeader('6. Hardware Requirements & Component Specifications');
-    renderBullet('Microcontroller Board:', 'Arduino Mega 2560 (ATmega2560, 16 MHz, 256 KB Flash, 8 KB SRAM, 4 Hardware UARTs, 16 Analog Inputs) — High-capacity edge data acquisition and processing engine.');
-    renderBullet('Wireless Transceiver Module:', 'ESP8266 (ESP-01 / NodeMCU Shield) — Serial-to-Wi-Fi gateway communicating over 2.4 GHz 802.11 b/g/n for cloud telemetry.');
-    renderBullet('Active Environmental & Gas Sensor Suite:', '');
-    renderBullet('MQ-135 Gas Sensor:', 'Air quality sensor detecting CO2, NH3, benzene, alcohol, and ambient hazardous smoke.', 26);
-    renderBullet('MQ-2 Gas Sensor:', 'Combustible gas sensor detecting LPG, propane, methane, hydrogen, and combustible gas leaks.', 26);
-    renderBullet('Optical Dust Sensor (Sharp GP2Y1010AU0F):', 'Infrared optical particulate sensor quantifying fine PM2.5 / PM10 density measurement in µg/m³.', 26);
-    renderBullet('Climate Sensor (DHT11 / DHT22):', 'Calibrated digital sensor logging relative humidity and ambient temperature.', 26);
-    renderBullet('Future Phase Expansion Feature:', 'Electrochemical O2 Sensor Module (ME2-O2 / Grove O2) — Reserved expansion interface for oxygen depletion tracking, planned for Phase 2 implementation subject to project grant allocation.', 26);
-    renderBullet('Local Actuators & On-Site Indicators:', '5V active acoustic buzzer for immediate emergency warning, and tri-color status LEDs (Green = Normal, Yellow = Warning, Red = Critical Danger).');
-    renderBullet('Power & Interface Accessories:', 'Regulated 5V/2A DC power supply, 3.3V logic level divider (resistor network protecting ESP8266 RX), solderless breadboard, and jumper wires.');
+    renderSectionHeader('6. Hardware Requirements & Component Specifications', 0.5, 0.25);
+    renderParagraph('The hardware architecture is partitioned into active edge acquisition modules and modular expansion interfaces:', 2.2, 0.26);
+    renderBullet('Microcontroller Board:', 'Arduino Mega 2560 (ATmega2560, 16 MHz, 256 KB Flash, 8 KB SRAM, 4 Hardware UARTs, 16 Analog Inputs) — High-capacity edge data acquisition and processing engine.', 15, 2.2, 0.26);
+    renderBullet('Wireless Transceiver Module:', 'ESP8266 (ESP-01 / NodeMCU Shield) — Serial-to-Wi-Fi gateway communicating over 2.4 GHz 802.11 b/g/n for cloud telemetry.', 15, 2.2, 0.26);
+    renderBullet('Active Environmental & Gas Sensor Suite:', '', 15, 2.0, 0.2);
+    renderBullet('MQ-135 Gas Sensor:', 'Air quality sensor detecting CO2, NH3, benzene, alcohol, and ambient hazardous smoke.', 26, 2.2, 0.26);
+    renderBullet('MQ-2 Gas Sensor:', 'Combustible gas sensor detecting LPG, propane, methane, hydrogen, and combustible gas leaks.', 26, 2.2, 0.26);
+    renderBullet('Optical Dust Sensor (Sharp GP2Y1010AU0F):', 'Infrared optical particulate sensor quantifying fine PM2.5 / PM10 density measurement in µg/m³.', 26, 2.2, 0.26);
+    renderBullet('Climate Sensor (DHT11 / DHT22):', 'Calibrated digital sensor logging relative humidity and ambient temperature.', 26, 2.2, 0.26);
+    renderBullet('Future Phase Expansion Feature:', 'Electrochemical O2 Sensor Module (ME2-O2 / Grove O2) — Reserved expansion interface for oxygen depletion tracking, planned for Phase 2 implementation subject to project grant allocation.', 26, 2.2, 0.26);
+    renderBullet('Local Actuators & On-Site Indicators:', '5V active acoustic buzzer for immediate emergency warning, and tri-color status LEDs (Green = Normal, Yellow = Warning, Red = Critical Danger).', 15, 2.2, 0.26);
+    renderBullet('Power & Interface Accessories:', 'Regulated 5V/2A DC power supply, 3.3V logic level divider (resistor network protecting ESP8266 RX), solderless breadboard, and jumper wires.', 15, 2.2, 0.26);
 
     // --- 7. Software and Technologies ---
-    renderSectionHeader('7. Software, Firmware & Web Stack');
-    renderBullet('Embedded Firmware:', 'Arduino IDE (C / Embedded C++) utilizing hardware UART interrupts and non-blocking sensor sampling algorithms.');
-    renderBullet('Firmware Libraries:', 'WiFiClient.h, PubSubClient.h (MQTT), and DHT.h (eliminating SoftwareSerial.h and LiquidCrystal_I2C.h for maximum efficiency).');
-    renderBullet('Communication Protocols:', 'MQTT (Message Queuing Telemetry Transport) for low-latency publish/subscribe messaging, HTTP REST API POST backup, and Hardware UART Serial communication.');
-    renderBullet('Real-Time Web Application Stack:', 'Modern responsive web dashboard built with HTML5/CSS3, JavaScript (React / Chart.js / WebSockets), displaying live gauge dials, real-time pollution time-series, historical telemetry archives, and threshold alert banners.');
+    renderSectionHeader('7. Software, Firmware & Web Stack', 0.5, 0.25);
+    renderParagraph('The software architecture integrates bare-metal deterministic C++ embedded firmware with a lightweight cloud web stack:', 2.2, 0.26);
+    renderBullet('Embedded Firmware:', 'Arduino IDE (C / Embedded C++) utilizing hardware UART interrupts and non-blocking sensor sampling algorithms.', 15, 2.2, 0.26);
+    renderBullet('Firmware Libraries:', 'WiFiClient.h, PubSubClient.h (MQTT), and DHT.h (eliminating SoftwareSerial.h and LiquidCrystal_I2C.h for maximum efficiency).', 15, 2.2, 0.26);
+    renderBullet('Communication Protocols:', 'MQTT (Message Queuing Telemetry Transport) for low-latency publish/subscribe messaging, HTTP REST API POST backup, and Hardware UART Serial communication.', 15, 2.2, 0.26);
+    renderBullet('Real-Time Web Application Stack:', 'Modern responsive web dashboard built with HTML5/CSS3, JavaScript (React / Chart.js / WebSockets), displaying live gauge dials, real-time pollution time-series, historical telemetry archives, and threshold alert banners.', 15, 2.2, 0.26);
 
     // ==========================================
     // PAGE 3: FEASIBILITY, SCOPE, DELIVERABLES, ROLES & TIMELINE (SECTIONS 8-12)
     // ==========================================
     doc.addPage();
-    doc.y = 42;
+    doc.y = 66; // Top margin matching page 1 (content begins cleanly below running header)
 
     // --- 8. Feasibility Analysis ---
-    renderSectionHeader('8. Feasibility Analysis');
-    renderBullet('Technical Feasibility:', 'The Arduino Mega 2560 provides 4x more SRAM (8 KB), 8x more flash memory (256 KB), and 4 hardware serial ports compared to entry-level boards, effortlessly handling multi-sensor calculations while the web application provides scalable multi-user access without hardware screen limits.');
-    renderBullet('Economic Feasibility:', 'The system is built entirely from accessible commercial-off-the-shelf (COTS) components. Excluding the costly commercial electrochemical O2 sensor from the initial bill of materials keeps the prototype strictly within undergraduate student budget limits while preserving multi-hazard air safety monitoring.');
-    renderBullet('Operational Feasibility:', 'The system requires standard 5V power and a 2.4 GHz Wi-Fi hotspot. Laboratory stakeholders and students can inspect live environmental metrics on any smartphone, tablet, or PC browser without needing to physically stand next to the device.');
+    renderSectionHeader('8. Feasibility Analysis', 0.1, 0.2);
+    renderBullet('Technical Feasibility:', 'The Arduino Mega 2560 provides 4x more SRAM (8 KB), 8x more flash memory (256 KB), and 4 hardware serial ports compared to entry-level boards, effortlessly handling multi-sensor calculations while the web application provides scalable multi-user access without hardware screen limits.', 15, 2.0, 0.22);
+    renderBullet('Economic Feasibility:', 'The system is built entirely from accessible commercial-off-the-shelf (COTS) components. Excluding the costly commercial electrochemical O2 sensor from the initial bill of materials keeps the prototype strictly within undergraduate student budget limits while preserving multi-hazard air safety monitoring.', 15, 2.0, 0.22);
+    renderBullet('Operational Feasibility:', 'The system requires standard 5V power and a 2.4 GHz Wi-Fi hotspot. Laboratory stakeholders and students can inspect live environmental metrics on any smartphone, tablet, or PC browser without needing to physically stand next to the device.', 15, 2.0, 0.22);
 
     // --- 9. Project Scope and Limitations ---
-    renderSectionHeader('9. Project Scope & Limitations');
-    renderBullet('Project Scope:', 'Designed for real-time monitoring across UITS computer science laboratories, server rooms, university project exhibition halls, and residential living spaces.');
-    renderBullet('Processing Headroom:', 'The Arduino Mega 2560 provides ample memory headroom, ensuring zero risk of SRAM stack collision during long-duration multi-sensor sampling.');
-    renderBullet('Budget Scope & Future O2 Integration:', 'Due to prohibitive procurement costs, electrochemical O2 percentage sensing is omitted from the initial prototype and scheduled as a planned future update; Mega 2560 analog channel A2 is reserved for seamless plug-and-play upgrade.');
-    renderBullet('Network Dependency:', 'Cloud logging and web application telemetry require active Wi-Fi internet connectivity. However, local audio-visual alarm functions (buzzer & LEDs) operate completely autonomously even when offline.');
+    renderSectionHeader('9. Project Scope & Limitations', 0.42, 0.2);
+    renderBullet('Project Scope:', 'Designed for real-time monitoring across UITS computer science laboratories, server rooms, university project exhibition halls, and residential living spaces.', 15, 2.0, 0.22);
+    renderBullet('Processing Headroom:', 'The Arduino Mega 2560 provides ample memory headroom, ensuring zero risk of SRAM stack collision during long-duration multi-sensor sampling.', 15, 2.0, 0.22);
+    renderBullet('Budget Scope & Future O2 Integration:', 'Due to prohibitive procurement costs, electrochemical O2 percentage sensing is omitted from the initial prototype and scheduled as a planned future update; Mega 2560 analog channel A2 is reserved for seamless plug-and-play upgrade.', 15, 2.0, 0.22);
+    renderBullet('Network Dependency:', 'Cloud logging and web application telemetry require active Wi-Fi internet connectivity. However, local audio-visual alarm functions (buzzer & LEDs) operate completely autonomously even when offline.', 15, 2.0, 0.22);
 
     // --- 10. Expected Outcome & Deliverables ---
-    renderSectionHeader('10. Expected Outcome & Deliverables');
-    renderBullet('1. Functional Hardware Prototype:', 'A fully assembled hardware station integrating the Arduino Mega 2560, ESP8266, and 4 primary sensing modules (with expansion readiness for future O2 addition).');
-    renderBullet('2. Interactive Real-Time Web Application:', 'A responsive, feature-rich web dashboard displaying live gauges, time-series telemetry plots, historical logs, and safety indicator cards for air quality, gases, dust, and climate.');
-    renderBullet('3. Sub-2s Emergency Safety Alarming:', 'An automated safety response mechanism sounding local sirens and streaming web alert flags within 2 seconds of threshold violations.');
+    renderSectionHeader('10. Expected Outcome & Deliverables', 0.42, 0.2);
+    renderBullet('1. Functional Hardware Prototype:', 'A fully assembled hardware station integrating the Arduino Mega 2560, ESP8266, and 4 primary sensing modules (with expansion readiness for future O2 addition).', 15, 2.0, 0.22);
+    renderBullet('2. Interactive Real-Time Web Application:', 'A responsive, feature-rich web dashboard displaying live gauges, time-series telemetry plots, historical logs, and safety indicator cards for air quality, gases, dust, and climate.', 15, 2.0, 0.22);
+    renderBullet('3. Sub-2s Emergency Safety Alarming:', 'An automated safety response mechanism sounding local sirens and streaming web alert flags within 2 seconds of threshold violations.', 15, 2.0, 0.22);
 
     // --- 11. Team Work Distribution & Responsibilities ---
-    renderSectionHeader('11. Team Work Distribution & Responsibilities');
-    renderBullet('MD. Fahad Rahman (0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O2 pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.');
-    renderBullet('Zannatul Nayem (0432320005101063):', 'ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.');
-    renderBullet('Shafayet Hossain Shafin (0432320005101088):', 'Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.');
+    renderSectionHeader('11. Team Work Distribution & Responsibilities', 0.42, 0.2);
+    renderBullet('MD. Fahad Rahman (0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O2 pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.', 15, 2.0, 0.22);
+    renderBullet('Zannatul Nayem (0432320005101063):', 'ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.', 15, 2.0, 0.22);
+    renderBullet('Shafayet Hossain Shafin (0432320005101088):', 'Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.', 15, 2.0, 0.22);
 
     // --- 12. Project Implementation Milestones ---
-    renderSectionHeader('12. Project Implementation Milestones');
-    renderBullet('Phase 1 (Weeks 1–3):', 'Component procurement, sensor testing, calibration curves generation, and initial Mega 2560 breadboard prototyping.');
-    renderBullet('Phase 2 (Weeks 4–6):', 'Arduino Mega 2560 edge conditioning logic, ESP8266 Hardware Serial1 bridge development, and local buzzer/LED alarm integration.');
-    renderBullet('Phase 3 (Weeks 7–9):', 'MQTT publish-subscribe pipeline setup, Web Application dashboard construction (live gauges, charts, alert banners), and cloud backend deployment.');
-    renderBullet('Phase 4 (Weeks 10–12):', 'System enclosure assembly, lab benchmarking under simulated gas/smoke events, end-to-end web testing, final report preparation, and Phase 2 O2 sensor upgrade documentation.');
+    renderSectionHeader('12. Project Implementation Milestones', 0.42, 0.2);
+    renderBullet('Phase 1 (Weeks 1–3):', 'Component procurement, sensor testing, calibration curves generation, and initial Mega 2560 breadboard prototyping.', 15, 2.0, 0.22);
+    renderBullet('Phase 2 (Weeks 4–6):', 'Arduino Mega 2560 edge conditioning logic, ESP8266 Hardware Serial1 bridge development, and local buzzer/LED alarm integration.', 15, 2.0, 0.22);
+    renderBullet('Phase 3 (Weeks 7–9):', 'MQTT publish-subscribe pipeline setup, Web Application dashboard construction (live gauges, charts, alert banners), and cloud backend deployment.', 15, 2.0, 0.22);
+    renderBullet('Phase 4 (Weeks 10–12):', 'System enclosure assembly, lab benchmarking under simulated gas/smoke events, end-to-end web testing, final report preparation, and Phase 2 O2 sensor upgrade documentation.', 15, 2.0, 0.22);
 
     // Running Header (Pages 2 & 3) & Running Footer (All Pages)
     const range = doc.bufferedPageRange();
@@ -307,16 +310,16 @@ function generateUITSStudentProposal(outputPath) {
       // Running header on pages 2+
       if (i > 0) {
         doc.font('Helvetica').fontSize(8).fillColor(MUTED)
-           .text('AirGuard IoT — Project Proposal  |  CSE402 IoT Lab', leftMargin, 20, { width: contentWidth / 2, align: 'left', lineBreak: false });
+           .text('AirGuard IoT — Project Proposal  |  CSE402 IoT Lab', leftMargin, 36, { width: contentWidth / 2, align: 'left', lineBreak: false });
         doc.font('Helvetica-Bold').fontSize(8).fillColor(PRIMARY)
-           .text('Department of CSE  •  UITS', leftMargin + contentWidth / 2, 20, { width: contentWidth / 2, align: 'right', lineBreak: false });
+           .text('Department of CSE  •  UITS', leftMargin + contentWidth / 2, 36, { width: contentWidth / 2, align: 'right', lineBreak: false });
         doc.strokeColor(LINE_COLOR).lineWidth(0.5)
-           .moveTo(leftMargin, 31).lineTo(pageWidth - rightMargin, 31).stroke();
+           .moveTo(leftMargin, 48).lineTo(pageWidth - rightMargin, 48).stroke();
       }
 
-      // Running footer on all pages
+      // Running footer on all pages (balanced at y = 794, 48 pt above bottom edge)
       doc.font('Helvetica').fontSize(7.5).fillColor(MUTED)
-         .text(`Page ${i + 1} of ${totalPages}   —   Department of Computer Science & Engineering, UITS   —   AirGuard IoT Proposal`, leftMargin, 818, {
+         .text(`Page ${i + 1} of ${totalPages}   —   Department of Computer Science & Engineering, UITS   —   AirGuard IoT Proposal`, leftMargin, 794, {
            width: contentWidth,
            align: 'center',
            lineBreak: false
