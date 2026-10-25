@@ -18,7 +18,7 @@
 * **Semester:** 7th Semester (Autumn 2026)
 * **Submitted to:** Abrar Mahbub Tanim, Lecturer, Department of CSE, UITS
 * **Submitted by (Project Team):**
-  * **MD. Fahad Rahman** (ID: `0432320005101071`)
+  * **MD. Fahad Rahman (Team Leader)** (ID: `0432320005101071`)
   * **Zannatul Nayem** (ID: `0432320005101063`)
   * **Shafayet Hossain Shafin** (ID: `0432320005101088`)
   * **Batch:** 54th Batch  |  **Section:** 6B1

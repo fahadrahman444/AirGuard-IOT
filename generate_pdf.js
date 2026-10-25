@@ -174,17 +174,17 @@ function generateUITSStudentProposal(outputPath) {
     // Right Column: Submitted by (Team Members)
     doc.font('Helvetica-Bold').fontSize(8.2).fillColor(SECONDARY).text('SUBMITTED BY (PROJECT TEAM):', rightColX, cardY + 6);
 
-    // Member 1
-    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('1. MD. Fahad Rahman', rightColX, cardY + 19, { continued: true });
-    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101071)');
+    // Member 1 (Team Leader)
+    doc.font('Helvetica-Bold').fontSize(8.4).fillColor(PRIMARY).text('1. MD. Fahad Rahman (Team Leader)', rightColX, cardY + 19, { continued: true });
+    doc.font('Helvetica').fontSize(8.0).fillColor(DARK_TEXT).text(' (ID: 0432320005101071)');
 
     // Member 2
-    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('2. Zannatul Nayem', rightColX, cardY + 32, { continued: true });
-    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101063)');
+    doc.font('Helvetica-Bold').fontSize(8.4).fillColor(PRIMARY).text('2. Zannatul Nayem', rightColX, cardY + 32, { continued: true });
+    doc.font('Helvetica').fontSize(8.0).fillColor(DARK_TEXT).text('  (ID: 0432320005101063)');
 
     // Member 3
-    doc.font('Helvetica-Bold').fontSize(8.8).fillColor(PRIMARY).text('3. Shafayet Hossain Shafin', rightColX, cardY + 45, { continued: true });
-    doc.font('Helvetica').fontSize(8.2).fillColor(DARK_TEXT).text('  (ID: 0432320005101088)');
+    doc.font('Helvetica-Bold').fontSize(8.4).fillColor(PRIMARY).text('3. Shafayet Hossain Shafin', rightColX, cardY + 45, { continued: true });
+    doc.font('Helvetica').fontSize(8.0).fillColor(DARK_TEXT).text('  (ID: 0432320005101088)');
 
     doc.font('Helvetica-Bold').fontSize(8.2).fillColor(DARK_TEXT)
        .text('Batch: 54th Batch  |  Section: 6B1  |  Autumn 2026', rightColX, cardY + 60);
@@ -287,7 +287,7 @@ function generateUITSStudentProposal(outputPath) {
 
     // --- 11. Team Work Distribution & Responsibilities ---
     renderSectionHeader('11. Team Work Distribution & Responsibilities', 0.42, 0.2);
-    renderBullet('MD. Fahad Rahman (0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O2 pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.', 15, 2.0, 0.22);
+    renderBullet('MD. Fahad Rahman (Team Leader - 0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O2 pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.', 15, 2.0, 0.22);
     renderBullet('Zannatul Nayem (0432320005101063):', 'ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.', 15, 2.0, 0.22);
     renderBullet('Shafayet Hossain Shafin (0432320005101088):', 'Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.', 15, 2.0, 0.22);
 

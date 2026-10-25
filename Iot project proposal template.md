@@ -14,7 +14,7 @@ Permanent Campus: Baridhara Nayanagar, Dhaka-1212
 
 		**Submitted by (Project Team):**
 
-1. MD. Fahad Rahman (ID: 0432320005101071)
+1. MD. Fahad Rahman (Team Leader - ID: 0432320005101071)
 2. Zannatul Nayem (ID: 0432320005101063)
 3. Shafayet Hossain Shafin (ID: 0432320005101088)
 
@@ -115,7 +115,7 @@ The Arduino Mega 2560 executes deterministic analog/digital signal conditioning 
 ---
 
 # 11. Team Work Distribution & Responsibilities
-* **MD. Fahad Rahman (0432320005101071):** Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O₂ pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.
+* **MD. Fahad Rahman (Team Leader - 0432320005101071):** Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O₂ pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.
 * **Zannatul Nayem (0432320005101063):** ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.
 * **Shafayet Hossain Shafin (0432320005101088):** Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.
 
