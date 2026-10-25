@@ -1,0 +1,20 @@
+# Compiled binaries & Arduino build files
+build/
+*.hex
+*.elf
+*.bin
+*.o
+*.a
+
+# Editor & OS artifacts
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Sensitive credentials & local configs
+config.h
+secrets.h
+*.env
