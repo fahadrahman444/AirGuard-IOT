@@ -18,3 +18,7 @@ Thumbs.db
 config.h
 secrets.h
 *.env
+
+# Node.js dependencies
+node_modules/
+package-lock.json

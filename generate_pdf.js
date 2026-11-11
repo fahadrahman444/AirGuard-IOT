@@ -198,7 +198,7 @@ function generateUITSStudentProposal(outputPath) {
     doc.font('Helvetica-Bold')
        .fontSize(9.2)
        .fillColor(PRIMARY)
-       .text('AirGuard IoT: An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using Arduino Mega 2560, ESP8266, and Real-Time Web Application', leftMargin, doc.y, {
+       .text('AirGuard IoT: An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using ESP32-S3 and Real-Time Web Application', leftMargin, doc.y, {
          width: contentWidth,
          align: 'left',
          lineGap: 1.8
@@ -219,9 +219,9 @@ function generateUITSStudentProposal(outputPath) {
 
     // --- 4. Proposed Solution & Architecture ---
     renderSectionHeader('4. Proposed Solution & System Architecture', 0.35, 0.18);
-    renderParagraph('AirGuard IoT delivers a robust edge-to-cloud environmental safety platform engineered specifically for educational laboratories and institutional facilities, utilizing a high-performance Arduino Mega 2560 (ATmega2560) paired with an ESP8266 Wi-Fi gateway.', 1.9, 0.18);
-    renderParagraph('The system captures multi-point physical telemetry from a synchronized multi-sensor array: MQ-135 (air pollution/smoke/toxic vapor), MQ-2 (combustible LPG/methane leakage), a Sharp GP2Y1010AU0F optical dust sensor (quantifying suspended particulates in µg/m³), and a DHT11/DHT22 digital sensor (logging ambient temperature and relative humidity). The architecture features dedicated expansion routing on the Mega 2560 for future integration of an electrochemical O2 sensor in Phase 2.', 1.9, 0.18);
-    renderParagraph('The Arduino Mega 2560 executes deterministic analog/digital signal conditioning leveraging its 16 analog input channels and dedicated Hardware Serial UART. Structured JSON telemetry is streamed over Hardware Serial1 directly to the ESP8266, eliminating software serial emulation overhead. The ESP8266 transmits this telemetry over 2.4 GHz campus Wi-Fi using lightweight MQTT/HTTP protocols to a dedicated, custom-developed Real-Time Web Application. The web platform delivers interactive gauges, historical charting, and live remote alerts, while local audio-visual buzzers and LEDs provide immediate on-site safety warning.', 1.9, 0.18);
+    renderParagraph('AirGuard IoT delivers a robust edge-to-cloud environmental safety platform engineered specifically for educational laboratories and institutional facilities, powered by a high-performance ESP32-S3 microcontroller (Dual-Core Xtensa LX7 @ 240 MHz) with integrated 2.4 GHz Wi-Fi and Bluetooth.', 1.9, 0.18);
+    renderParagraph('The system captures multi-point physical telemetry from a synchronized multi-sensor array: MQ-135 (air pollution/smoke/toxic vapor), MQ-9 (Carbon Monoxide and combustible gas leakage), a Sharp GP2Y1010AU0F optical dust sensor (quantifying suspended particulates in µg/m³), and a DHT11/DHT22 digital sensor (logging ambient temperature and relative humidity). The architecture features dedicated ADC1 expansion routing (GPIO 5) on the ESP32-S3 for future integration of an electrochemical O2 sensor in Phase 2.', 1.9, 0.18);
+    renderParagraph('The ESP32-S3 executes deterministic analog/digital signal conditioning leveraging its 12-bit ADC1 channels. Combining data acquisition, threshold intelligence, and wireless transmission on a single silicon SoC eliminates the communication latency, baud-rate bottlenecks, and level-shifting complexities of legacy multi-board configurations. Telemetry is transmitted over 2.4 GHz campus Wi-Fi using the lightweight MQTT protocol to a dedicated, custom-developed Real-Time Web Application. The web platform delivers interactive gauges, historical charting, and live remote alerts, while local audio-visual buzzers and LEDs provide immediate on-site safety warning.', 1.9, 0.18);
 
     // ==========================================
     // PAGE 2: OBJECTIVES, HARDWARE, SOFTWARE (SECTIONS 5-7)
@@ -234,30 +234,29 @@ function generateUITSStudentProposal(outputPath) {
     renderParagraph('The AirGuard IoT project is guided by the following key technical and laboratory deployment objectives:', 2.2, 0.26);
     renderBullet('Comprehensive Environmental Sensing:', 'Continuously quantify Air Quality Index (AQI), combustible gas concentration (PPM), suspended dust density (µg/m³), ambient temperature, and relative humidity.', 15, 2.2, 0.28);
     renderBullet('Early Gas Hazard Detection:', 'Rapidly detect combustible gas leaks (LPG, methane) and toxic smoke to prevent domestic fire outbreaks, equipment destruction, and asphyxiation accidents.', 15, 2.2, 0.28);
-    renderBullet('High-Throughput Hardware UART Gateway:', 'Establish reliable, jitter-free wireless data transfer between the Arduino Mega 2560 hardware Serial1 port and cloud brokers via the ESP8266 transceiver.', 15, 2.2, 0.28);
+    renderBullet('Unified Single-Chip IoT Processing:', 'Eliminate inter-MCU communication bottlenecks by processing sensor telemetry, on-site alarms, and MQTT wireless publishing directly on a single ESP32-S3 platform.', 15, 2.2, 0.28);
     renderBullet('Custom Web Application Visualization:', 'Develop a responsive, full-featured web dashboard displaying real-time analytical metrics, interactive graphs, and historical logs, replacing restrictive on-site character LCDs.', 15, 2.2, 0.28);
     renderBullet('Automated Dual-Layer Alarming:', 'Execute immediate local acoustic/visual alert sequences (active buzzer + tri-color LEDs) alongside real-time web socket/cloud alert banners when safety thresholds are breached.', 15, 2.2, 0.28);
 
     // --- 6. Hardware Requirements ---
     renderSectionHeader('6. Hardware Requirements & Component Specifications', 0.5, 0.25);
     renderParagraph('The hardware architecture is partitioned into active edge acquisition modules and modular expansion interfaces:', 2.2, 0.26);
-    renderBullet('Microcontroller Board:', 'Arduino Mega 2560 (ATmega2560, 16 MHz, 256 KB Flash, 8 KB SRAM, 4 Hardware UARTs, 16 Analog Inputs) — High-capacity edge data acquisition and processing engine.', 15, 2.2, 0.26);
-    renderBullet('Wireless Transceiver Module:', 'ESP8266 (ESP-01 / NodeMCU Shield) — Serial-to-Wi-Fi gateway communicating over 2.4 GHz 802.11 b/g/n for cloud telemetry.', 15, 2.2, 0.26);
+    renderBullet('All-in-One IoT Microcontroller:', 'ESP32-S3 (ESP32-S3-DevKitC-1 / WROOM, Dual-Core 240 MHz, 512 KB SRAM, 8 MB Flash, Native 2.4 GHz 802.11 b/g/n Wi-Fi & BLE 5) — Unified edge acquisition, signal processing, and direct cloud transmission engine.', 15, 2.2, 0.26);
     renderBullet('Active Environmental & Gas Sensor Suite:', '', 15, 2.0, 0.2);
     renderBullet('MQ-135 Gas Sensor:', 'Air quality sensor detecting CO2, NH3, benzene, alcohol, and ambient hazardous smoke.', 26, 2.2, 0.26);
-    renderBullet('MQ-2 Gas Sensor:', 'Combustible gas sensor detecting LPG, propane, methane, hydrogen, and combustible gas leaks.', 26, 2.2, 0.26);
+    renderBullet('MQ-9 Gas Sensor:', 'Carbon Monoxide (CO) and combustible gas (methane, LPG) sensor for asphyxiation and fire hazard prevention.', 26, 2.2, 0.26);
     renderBullet('Optical Dust Sensor (Sharp GP2Y1010AU0F):', 'Infrared optical particulate sensor quantifying fine PM2.5 / PM10 density measurement in µg/m³.', 26, 2.2, 0.26);
     renderBullet('Climate Sensor (DHT11 / DHT22):', 'Calibrated digital sensor logging relative humidity and ambient temperature.', 26, 2.2, 0.26);
     renderBullet('Future Phase Expansion Feature:', 'Electrochemical O2 Sensor Module (ME2-O2 / Grove O2) — Reserved expansion interface for oxygen depletion tracking, planned for Phase 2 implementation subject to project grant allocation.', 26, 2.2, 0.26);
     renderBullet('Local Actuators & On-Site Indicators:', '5V active acoustic buzzer for immediate emergency warning, and tri-color status LEDs (Green = Normal, Yellow = Warning, Red = Critical Danger).', 15, 2.2, 0.26);
-    renderBullet('Power & Interface Accessories:', 'Regulated 5V/2A DC power supply, 3.3V logic level divider (resistor network protecting ESP8266 RX), solderless breadboard, and jumper wires.', 15, 2.2, 0.26);
+    renderBullet('Power & Interface Accessories:', 'Regulated 5V/2A DC power supply, 1kΩ/2kΩ analog ADC voltage divider resistors, 150Ω resistor, 220µF electrolytic capacitor, solderless breadboard, and jumper wires.', 15, 2.2, 0.26);
 
     // --- 7. Software and Technologies ---
     renderSectionHeader('7. Software, Firmware & Web Stack', 0.5, 0.25);
     renderParagraph('The software architecture integrates bare-metal deterministic C++ embedded firmware with a lightweight cloud web stack:', 2.2, 0.26);
-    renderBullet('Embedded Firmware:', 'Arduino IDE (C / Embedded C++) utilizing hardware UART interrupts and non-blocking sensor sampling algorithms.', 15, 2.2, 0.26);
-    renderBullet('Firmware Libraries:', 'WiFiClient.h, PubSubClient.h (MQTT), and DHT.h (eliminating SoftwareSerial.h and LiquidCrystal_I2C.h for maximum efficiency).', 15, 2.2, 0.26);
-    renderBullet('Communication Protocols:', 'MQTT (Message Queuing Telemetry Transport) for low-latency publish/subscribe messaging, HTTP REST API POST backup, and Hardware UART Serial communication.', 15, 2.2, 0.26);
+    renderBullet('Embedded Firmware:', 'ESP-IDF / Arduino IDE (C / Embedded C++) utilizing non-blocking FreeRTOS sensor sampling and ADC1-safe sampling algorithms.', 15, 2.2, 0.26);
+    renderBullet('Firmware Libraries:', 'WiFi.h, PubSubClient.h (MQTT), and DHT.h.', 15, 2.2, 0.26);
+    renderBullet('Communication Protocols:', 'MQTT (Message Queuing Telemetry Transport) for low-latency publish/subscribe messaging over Wi-Fi 802.11 b/g/n, and HTTP REST API fallback.', 15, 2.2, 0.26);
     renderBullet('Real-Time Web Application Stack:', 'Modern responsive web dashboard built with HTML5/CSS3, JavaScript (React / Chart.js / WebSockets), displaying live gauge dials, real-time pollution time-series, historical telemetry archives, and threshold alert banners.', 15, 2.2, 0.26);
 
     // ==========================================
@@ -268,34 +267,34 @@ function generateUITSStudentProposal(outputPath) {
 
     // --- 8. Feasibility Analysis ---
     renderSectionHeader('8. Feasibility Analysis', 0.1, 0.2);
-    renderBullet('Technical Feasibility:', 'The Arduino Mega 2560 provides 4x more SRAM (8 KB), 8x more flash memory (256 KB), and 4 hardware serial ports compared to entry-level boards, effortlessly handling multi-sensor calculations while the web application provides scalable multi-user access without hardware screen limits.', 15, 2.0, 0.22);
-    renderBullet('Economic Feasibility:', 'The system is built entirely from accessible commercial-off-the-shelf (COTS) components. Excluding the costly commercial electrochemical O2 sensor from the initial bill of materials keeps the prototype strictly within undergraduate student budget limits while preserving multi-hazard air safety monitoring.', 15, 2.0, 0.22);
+    renderBullet('Technical Feasibility:', 'The ESP32-S3 provides high-speed 240 MHz dual-core processing, 512 KB SRAM, and hardware floating-point acceleration, effortlessly handling multi-sensor calibrations, digital filtering, and secure MQTT transmission concurrently without requiring a secondary coprocessor.', 15, 2.0, 0.22);
+    renderBullet('Economic Feasibility:', 'The system is built entirely from accessible commercial-off-the-shelf (COTS) components. Leveraging the all-in-one ESP32-S3 reduces overall bill-of-materials cost compared to multi-board systems while preserving top-tier multi-hazard air safety monitoring.', 15, 2.0, 0.22);
     renderBullet('Operational Feasibility:', 'The system requires standard 5V power and a 2.4 GHz Wi-Fi hotspot. Laboratory stakeholders and students can inspect live environmental metrics on any smartphone, tablet, or PC browser without needing to physically stand next to the device.', 15, 2.0, 0.22);
 
     // --- 9. Project Scope and Limitations ---
     renderSectionHeader('9. Project Scope & Limitations', 0.42, 0.2);
     renderBullet('Project Scope:', 'Designed for real-time monitoring across UITS computer science laboratories, server rooms, university project exhibition halls, and residential living spaces.', 15, 2.0, 0.22);
-    renderBullet('Processing Headroom:', 'The Arduino Mega 2560 provides ample memory headroom, ensuring zero risk of SRAM stack collision during long-duration multi-sensor sampling.', 15, 2.0, 0.22);
-    renderBullet('Budget Scope & Future O2 Integration:', 'Due to prohibitive procurement costs, electrochemical O2 percentage sensing is omitted from the initial prototype and scheduled as a planned future update; Mega 2560 analog channel A2 is reserved for seamless plug-and-play upgrade.', 15, 2.0, 0.22);
+    renderBullet('Processing Headroom:', 'The ESP32-S3 dual-core processor delivers abundant computational headroom, ensuring zero risk of memory exhaustion or task blocking during continuous sampling.', 15, 2.0, 0.22);
+    renderBullet('Budget Scope & Future O2 Integration:', 'Due to prohibitive procurement costs, electrochemical O2 percentage sensing is omitted from the initial prototype and scheduled as a planned future update; ESP32-S3 ADC1 channel GPIO 5 is reserved for seamless plug-and-play upgrade.', 15, 2.0, 0.22);
     renderBullet('Network Dependency:', 'Cloud logging and web application telemetry require active Wi-Fi internet connectivity. However, local audio-visual alarm functions (buzzer & LEDs) operate completely autonomously even when offline.', 15, 2.0, 0.22);
 
     // --- 10. Expected Outcome & Deliverables ---
     renderSectionHeader('10. Expected Outcome & Deliverables', 0.42, 0.2);
-    renderBullet('1. Functional Hardware Prototype:', 'A fully assembled hardware station integrating the Arduino Mega 2560, ESP8266, and 4 primary sensing modules (with expansion readiness for future O2 addition).', 15, 2.0, 0.22);
+    renderBullet('1. Functional Hardware Prototype:', 'A fully assembled hardware station integrating the ESP32-S3 and 4 primary sensing modules (with expansion readiness for future O2 addition).', 15, 2.0, 0.22);
     renderBullet('2. Interactive Real-Time Web Application:', 'A responsive, feature-rich web dashboard displaying live gauges, time-series telemetry plots, historical logs, and safety indicator cards for air quality, gases, dust, and climate.', 15, 2.0, 0.22);
     renderBullet('3. Sub-2s Emergency Safety Alarming:', 'An automated safety response mechanism sounding local sirens and streaming web alert flags within 2 seconds of threshold violations.', 15, 2.0, 0.22);
 
     // --- 11. Team Work Distribution & Responsibilities ---
     renderSectionHeader('11. Team Work Distribution & Responsibilities', 0.42, 0.2);
-    renderBullet('MD. Fahad Rahman (Team Leader - 0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-2, GP2Y1010AU0F, DHT), future O2 pin allocation, Arduino Mega 2560 firmware engineering, and hardware serial packetization.', 15, 2.0, 0.22);
-    renderBullet('Zannatul Nayem (0432320005101063):', 'ESP8266 Wi-Fi gateway firmware development, Hardware UART packet parsing, MQTT cloud broker configuration, and REST API telemetry transmission pipeline.', 15, 2.0, 0.22);
+    renderBullet('MD. Fahad Rahman (Team Leader - 0432320005101071):', 'Overall system architecture, multi-sensor calibration & interfacing (MQ-135, MQ-9, GP2Y1010AU0F, DHT), future O2 pin allocation, ESP32-S3 firmware engineering, and FreeRTOS task coordination.', 15, 2.0, 0.22);
+    renderBullet('Zannatul Nayem (0432320005101063):', 'ESP32-S3 Wi-Fi stack & network manager, MQTT cloud broker configuration, payload serialization, and REST API telemetry transmission pipeline.', 15, 2.0, 0.22);
     renderBullet('Shafayet Hossain Shafin (0432320005101088):', 'Real-Time Web Application frontend/backend development (dashboard UI, live metric cards, Chart.js time-series graphs), local audio-visual alarm circuit integration, testing, and technical documentation.', 15, 2.0, 0.22);
 
     // --- 12. Project Implementation Milestones ---
     renderSectionHeader('12. Project Implementation Milestones (July – Nov 15, 2026)', 0.42, 0.2);
-    renderBullet('Phase 1 (July – August 2026):', 'Requirements analysis, COTS sensor procurement (MQ-135, MQ-2, GP2Y1010AU0F, DHT), sensor burn-in, calibration testing, and breadboard baseline prototyping.', 15, 2.0, 0.22);
-    renderBullet('Phase 2 (September 2026):', 'Arduino Mega 2560 edge acquisition firmware, Hardware Serial1 UART data packetization, and autonomous on-site audio-visual buzzer/LED alarm circuit integration.', 15, 2.0, 0.22);
-    renderBullet('Phase 3 (October 2026):', 'ESP8266 Wi-Fi gateway firmware, MQTT cloud publish/subscribe pipeline configuration, and interactive Real-Time Web Application dashboard development.', 15, 2.0, 0.22);
+    renderBullet('Phase 1 (July – August 2026):', 'Requirements analysis, COTS sensor procurement (MQ-135, MQ-9, GP2Y1010AU0F, DHT), sensor burn-in, calibration testing, and breadboard baseline prototyping.', 15, 2.0, 0.22);
+    renderBullet('Phase 2 (September 2026):', 'ESP32-S3 edge acquisition firmware, ADC1 voltage divider protection circuit, and autonomous on-site audio-visual buzzer/LED alarm circuit integration.', 15, 2.0, 0.22);
+    renderBullet('Phase 3 (October 2026):', 'ESP32-S3 Wi-Fi & MQTT cloud publish/subscribe pipeline configuration, and interactive Real-Time Web Application dashboard development.', 15, 2.0, 0.22);
     renderBullet('Phase 4 (Nov 1 – Nov 15, 2026):', 'Hardware enclosure packaging, end-to-end lab benchmarking under simulated gas/smoke, system calibration, and first functional prototype ready before Nov 15, 2026.', 15, 2.0, 0.22);
 
     // Running Header (Pages 2 & 3) & Running Footer (All Pages)

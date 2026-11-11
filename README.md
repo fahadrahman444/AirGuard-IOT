@@ -1,9 +1,9 @@
 # AirGuard IoT
 
-> **An IoT-Based Smart Air Quality, Gas Leakage, and Environmental Monitoring System Using Arduino Mega 2560, ESP8266, and Real-Time Web Application**
+> **An IoT-Based Smart Air Quality, Carbon Monoxide & Gas Leakage, and Environmental Monitoring System Using ESP32-S3 and Real-Time Web Application**
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-AirGuard--IOT-blue?logo=github)](https://github.com/fahadrahman444/AirGuard-IOT)
-[![Hardware](https://img.shields.io/badge/Platform-Arduino%20Mega%202560%20%7C%20ESP8266-orange?logo=arduino)](https://www.arduino.cc/)
+[![Hardware](https://img.shields.io/badge/Platform-ESP32--S3-red?logo=espressif)](https://www.espressif.com/en/products/socs/esp32-s3)
 [![Protocol](https://img.shields.io/badge/Protocol-MQTT%20%2F%20HTTP-green)](https://mqtt.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -34,21 +34,22 @@
 
 ## 1. Project Overview
 
-**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, combustible gas leaks, airborne dust particles, and ambient climate conditions in real time (with an analog hardware interface reserved for future oxygen sensing). 
+**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, lethal carbon monoxide (CO), combustible gas leaks, airborne dust particles, and ambient climate conditions in real time (with an analog hardware interface reserved for future oxygen sensing). 
 
-By combining the high-capacity deterministic data acquisition of an **Arduino Mega 2560** with the wireless networking capabilities of an **ESP8266 Wi-Fi** module, the system bridges local multi-sensor physical telemetry with a custom-developed **Real-Time Web Application** over the lightweight **MQTT** protocol.
+Driven by an all-in-one **ESP32-S3** microcontroller (Dual-Core Xtensa LX7 @ 240 MHz), the system unifies high-speed deterministic analog acquisition, on-site alarm triggering, and integrated 2.4 GHz Wi-Fi connectivity on a single silicon platform. Telemetry is streamed directly to a custom **Real-Time Web Application** using the lightweight **MQTT** protocol.
 
 ---
 
 ## 2. Key Features
 
+- **Single-Chip All-in-One Architecture:** Powered by the **ESP32-S3**, eliminating dual-MCU wiring, level-shifters, and UART communication bottlenecks.
 - **Multi-Gas Air Quality Monitoring:** Continuously quantifies indoor/ambient air pollution (CO₂, NH₃, benzene, smoke) via an MQ-135 sensor.
-- **Harmful Gas Leakage Detection:** Detects flammable and toxic gas leaks (LPG, propane, methane) with an MQ-2 sensor to avoid fire hazards.
-- **Particulate Matter (Dust) Detection:** Optical dust sensing (Sharp GP2Y1010AU0F) to assess fine suspended particulates in µg/m³.
+- **Carbon Monoxide & Flammable Gas Leakage Detection:** Detects dangerous CO gas alongside combustible fuels (methane, LPG) using an MQ-9 sensor to avoid poisoning and fire hazards.
+- **Particulate Matter (Dust) Detection:** Optical dust sensing (Sharp GP2Y1010AU0F) assessing fine suspended particulates in µg/m³.
 - **Climate Monitoring:** Digital temperature and relative humidity tracking using a DHT11/DHT22 sensor.
-- **Dual-Layer Alert System:** Instantaneous on-site audio-visual alarms (active buzzer + tri-color LEDs) paired with remote cloud/web alert banners.
+- **Dual-Layer Alert System:** Instantaneous on-site audio-visual alarms (active buzzer + tri-color LEDs) paired with remote web/cloud alert banners.
 - **Real-Time Web Dashboard:** Responsive web interface with interactive gauges, live time-series charts, and historical telemetry archives (superseding character LCD hardware constraints).
-- **Future Scope / Phase 2 Upgrade (Oxygen Concentration):** Hardware channel (Analog Pin A2) is pre-configured and reserved for electrochemical O₂ sensing (ME2-O2 / Grove O₂), deferred from Phase 1 due to undergraduate component budget constraints.
+- **Future Scope / Phase 2 Upgrade (Oxygen Concentration):** Dedicated ADC1 channel (`GPIO 5`) is reserved for electrochemical O₂ sensing (ME2-O2 / Grove O₂), deferred from Phase 1 due to sensor procurement costs.
 
 ---
 
@@ -57,8 +58,8 @@ By combining the high-capacity deterministic data acquisition of an **Arduino Me
 ```mermaid
 flowchart TD
     subgraph Sensing_Layer["Sensing Layer (Active Phase 1)"]
-        MQ135["MQ-135 (Air Quality)"]
-        MQ2["MQ-2 (Combustible Gas)"]
+        MQ135["MQ-135 (Air Quality & Smoke)"]
+        MQ9["MQ-9 (Carbon Monoxide & Combustible Gas)"]
         DUST["Sharp GP2Y1010 Dust Sensor"]
         DHT["DHT11 / DHT22 (Temp & Humidity)"]
         O2["[Future Phase 2] ME2-O2 Sensor"]:::future
@@ -66,14 +67,11 @@ flowchart TD
 
     classDef future stroke-dasharray: 5 5,stroke:#999,color:#777;
 
-    subgraph Edge_Processing["Edge Processing Layer"]
-        MEGA["Arduino Mega 2560 (ATmega2560)"]
+    subgraph ESP32S3_SoC["All-in-One Controller (ESP32-S3)"]
+        SENS_ADC["ADC1 Acquisition & Voltage Scaling"]
+        LOGIC["Dual-Core Xtensa LX7 (Threshold Logic)"]
+        WIFI_RADIO["Integrated 2.4 GHz 802.11 b/g/n Wi-Fi"]
         ALARM["Active Buzzer & Tri-Color Status LEDs"]
-    end
-
-    subgraph Gateway_Layer["Gateway & Connectivity"]
-        ESP["ESP8266 Wi-Fi Module (ESP-01 / NodeMCU)"]
-        WIFI(("2.4 GHz Wi-Fi Hotspot"))
     end
 
     subgraph Web_Layer["Cloud & Web Application Layer"]
@@ -81,11 +79,11 @@ flowchart TD
         WEB["Real-Time Web Application Dashboard"]
     end
 
-    Sensing_Layer -->|Analog & Digital GPIO| MEGA
-    MEGA -->|Threshold Alarms| ALARM
-    MEGA -->|Hardware Serial1 JSON| ESP
-    ESP -->|Wi-Fi 802.11 b/g/n| WIFI
-    WIFI -->|MQTT Publish| BROKER
+    Sensing_Layer -->|Analog (ADC1) & Digital One-Wire| SENS_ADC
+    SENS_ADC --> LOGIC
+    LOGIC -->|Threshold Trigger| ALARM
+    LOGIC --> WIFI_RADIO
+    WIFI_RADIO -->|MQTT Publish over Wi-Fi| BROKER
     BROKER -->|Live Gauges, Graphs & Alerts| WEB
 ```
 
@@ -102,13 +100,11 @@ AirGuard-IOT/
 │   └── assets/
 │       └── uits_logo.png              # Official UITS university crest
 ├── hardware/
-│   ├── pinout.md                      # Mega 2560 pin mapping & wiring schematics
+│   ├── pinout.md                      # ESP32-S3 pin mapping, ADC1 rules & protection
 │   └── bill_of_materials.md           # Complete components list & specifications
 ├── firmware/
-│   ├── arduino_airguard/
-│   │   └── arduino_airguard.ino       # Arduino Mega 2560 sensor acquisition sketch
-│   └── esp8266_gateway/
-│       └── esp8266_gateway.ino        # ESP8266 Wi-Fi & MQTT publishing gateway
+│   └── esp32_airguard/
+│       └── esp32_airguard.ino         # Integrated ESP32-S3 acquisition & MQTT firmware
 ├── generate_pdf.js                    # Automated PDF proposal generator
 ├── .gitignore                         # Git ignore rules for embedded development
 └── README.md                          # Main project documentation
@@ -118,16 +114,18 @@ AirGuard-IOT/
 
 ## 5. Hardware Pinout Quick Reference
 
-| Sensor / Peripheral | Sensor Pin | Arduino Mega 2560 Pin | Function / Description |
+| Sensor / Peripheral | Sensor Pin | ESP32-S3 Pin | Function / Description |
 | :--- | :--- | :--- | :--- |
-| **MQ-135** | AOUT | **A0** | Analog Air Quality Voltage |
-| **MQ-2** | AOUT | **A1** | Analog Gas Concentration Voltage |
-| **O₂ Sensor (Phase 2 Upgrade)** | AOUT | **A2 (Reserved)** | Analog Oxygen Channel *(Reserved for Phase 2 ME2-O2 upgrade)* |
-| **Sharp GP2Y1010** | V0 / LED | **A3** / **D7** | Dust Analog Output & Optical LED Pulse Trigger |
-| **DHT11 / DHT22** | DATA | **D4** | Digital One-Wire Climate Telemetry |
-| **Active Buzzer** | POS (+) | **D8** | Acoustic Emergency Alarm Trigger |
-| **Status LEDs** | Green / Yellow / Red | **D9** / **D10** / **D11** | Visual Safety Indicators (Normal / Warning / Danger) |
-| **ESP8266 Wi-Fi** | RX / TX | **Pin 18 (TX1)** / **Pin 19 (RX1)** | Hardware Serial1 UART (via 1kΩ/2kΩ voltage divider) |
+| **MQ-135** | AOUT | **GPIO 1 (ADC1_CH0)** | Analog Air Quality Voltage (via 1kΩ/2kΩ divider) |
+| **MQ-9** | AOUT | **GPIO 2 (ADC1_CH1)** | Analog CO & Flammable Gas Voltage (via 1kΩ/2kΩ divider) |
+| **O₂ Sensor (Phase 2 Upgrade)** | AOUT | **GPIO 5 (ADC1_CH4)** | Analog Oxygen Channel *(Reserved for Phase 2 ME2-O2 upgrade)* |
+| **Sharp GP2Y1010** | V0 / LED | **GPIO 4 (ADC1_CH3)** / **GPIO 6** | Dust Analog Output & Optical LED Pulse Trigger |
+| **DHT11 / DHT22** | DATA | **GPIO 7** | Digital One-Wire Climate Telemetry |
+| **Active Buzzer** | POS (+) | **GPIO 8** | Acoustic Emergency Alarm Trigger |
+| **Status LEDs** | Green / Yellow / Red | **GPIO 9** / **GPIO 10** / **GPIO 11** | Visual Safety Indicators (Normal / Warning / Danger) |
+
+> [!IMPORTANT]
+> All analog pins are intentionally designated on **ADC1** so analog sampling remains uninterrupted when the ESP32-S3 Wi-Fi stack is active.
 
 *For complete electrical schematics and resistor values, consult [hardware/pinout.md](hardware/pinout.md).*
 
@@ -137,20 +135,17 @@ AirGuard-IOT/
 
 ### Prerequisites
 * [Arduino IDE 2.x](https://www.arduino.cc/en/software)
+* **ESP32 Board Package:** Install `esp32` by Espressif Systems via Arduino IDE Boards Manager.
 * Installed Arduino Libraries:
   * `DHT sensor library` by Adafruit
   * `PubSubClient` by Nick O'Leary
 
 ### Flashing Firmware
-1. **Arduino Mega 2560 Edge Node:**
-   - Open `firmware/arduino_airguard/arduino_airguard.ino` in Arduino IDE.
-   - Select Board: **Arduino Mega or Mega 2560** (Processor: **ATmega2560**).
-   - Select your serial COM port and click **Upload**.
-2. **ESP8266 Wi-Fi Gateway:**
-   - Open `firmware/esp8266_gateway/esp8266_gateway.ino`.
-   - Update `WIFI_SSID` and `WIFI_PASSWORD` with your 2.4 GHz network credentials.
-   - Select Board: **Generic ESP8266 Module** (or **NodeMCU 1.0**).
-   - Select your serial COM port and click **Upload**.
+1. Open `firmware/esp32_airguard/esp32_airguard.ino` in Arduino IDE.
+2. Select Board: **ESP32S3 Dev Module** (or your specific ESP32-S3 board variant).
+3. Update `WIFI_SSID` and `WIFI_PASSWORD` with your 2.4 GHz network credentials.
+4. Set USB CDC On Boot: **Enabled** (if using native USB-C port).
+5. Select the corresponding COM port and click **Upload**.
 
 ---
 
