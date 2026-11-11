@@ -131,21 +131,31 @@ AirGuard-IOT/
 
 ---
 
-## 6. Getting Started
+## 6. Getting Started (Arduino IDE 2.x)
+
+For a complete step-by-step wiring guide, ASCII pin connection diagrams, and breadboard schematics, see **[hardware/pinout.md](hardware/pinout.md)**.
 
 ### Prerequisites
 * [Arduino IDE 2.x](https://www.arduino.cc/en/software)
-* **ESP32 Board Package:** Install `esp32` by Espressif Systems via Arduino IDE Boards Manager.
-* Installed Arduino Libraries:
-  * `DHT sensor library` by Adafruit
+* **ESP32 Board Package:** In Arduino IDE, open **Preferences**, add `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json` to Boards Manager URLs, then install `esp32` by Espressif Systems.
+* **Libraries (install via Library Manager):**
   * `PubSubClient` by Nick O'Leary
+  * `DHT sensor library` by Adafruit
+  * `Adafruit Unified Sensor` by Adafruit
+
+### Arduino IDE Board Settings
+* **Board:** `ESP32S3 Dev Module`
+* **USB CDC On Boot:** `Enabled` *(enables Serial communication over native USB-C)*
+* **Flash Size:** `8MB` *(or 4MB/16MB matching your board)*
+* **Partition Scheme:** `Default 4MB with spiffs`
+* **Upload Speed:** `921600`
+* **Port:** Active COM Port
 
 ### Flashing Firmware
-1. Open `firmware/esp32_airguard/esp32_airguard.ino` in Arduino IDE.
-2. Select Board: **ESP32S3 Dev Module** (or your specific ESP32-S3 board variant).
-3. Update `WIFI_SSID` and `WIFI_PASSWORD` with your 2.4 GHz network credentials.
-4. Set USB CDC On Boot: **Enabled** (if using native USB-C port).
-5. Select the corresponding COM port and click **Upload**.
+1. Open [`firmware/esp32_airguard/esp32_airguard.ino`](firmware/esp32_airguard/esp32_airguard.ino) in Arduino IDE.
+2. Update `WIFI_SSID` and `WIFI_PASSWORD` with your local 2.4 GHz credentials.
+3. Click **Verify** to compile, then **Upload**.
+4. Open **Serial Monitor** at **115200 baud** to view real-time diagnostics and JSON telemetry packets!
 
 ---
 
