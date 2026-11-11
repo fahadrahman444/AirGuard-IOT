@@ -1,0 +1,20 @@
+{
+  "name": "airguard-iot",
+  "version": "1.2.0",
+  "description": "Smart Air Quality, Carbon Monoxide & Gas Leakage Monitoring System Using ESP32-S3 and Real-Time Web Application",
+  "main": "generate_pdf.js",
+  "scripts": {
+    "test": "node --test test/dashboard_verification.test.js",
+    "build:pdf": "node generate_pdf.js"
+  },
+  "keywords": [
+    "iot",
+    "esp32-s3",
+    "mqtt",
+    "supabase",
+    "scada",
+    "air-quality"
+  ],
+  "author": "MD. Fahad Rahman, Zannatul Nayem, Shafayet Hossain Shafin",
+  "license": "MIT"
+}
