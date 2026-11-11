@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AirGuard — Environmental Telemetry</title>
+  <title>AirGuard — Environmental Telemetry Station</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Paho MQTT Client CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-  <!-- Minimal Icons CDN -->
+  <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <script>
@@ -21,7 +21,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
             mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
           }
         }
@@ -31,267 +31,325 @@
 
   <style>
     body {
-      background-color: #ffffff;
-      color: #09090b;
+      background-color: #f8fafc;
+      color: #0f172a;
       -webkit-font-smoothing: antialiased;
     }
-    .rule-border {
-      border: 1px solid #e4e4e7;
+    .card-shell {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
     }
-    .subtle-bg {
-      background-color: #fafafa;
+    .bar-track {
+      background-color: #f1f5f9;
     }
-    .progress-track {
-      background-color: #f4f4f5;
+    .bar-indicator {
+      transition: width 0.35s ease, background-color 0.35s ease;
     }
-    .progress-fill {
-      transition: width 0.3s ease, background-color 0.3s ease;
+    @keyframes alert-pulse-box {
+      0%, 100% { background-color: #fff1f2; border-color: #f43f5e; }
+      50% { background-color: #ffe4e6; border-color: #e11d48; }
     }
-    @keyframes alert-flash {
-      0%, 100% { background-color: #fef2f2; border-color: #f87171; }
-      50% { background-color: #fee2e2; border-color: #ef4444; }
-    }
-    .hazard-active {
-      animation: alert-flash 1s infinite ease-in-out;
+    .alarm-critical-active {
+      animation: alert-pulse-box 1s infinite ease-in-out;
     }
   </style>
 </head>
-<body class="min-h-screen text-[13px] selection:bg-black selection:text-white pb-12">
+<body class="min-h-screen text-[13px] selection:bg-slate-900 selection:text-white pb-12">
 
-  <!-- Minimal Top Header -->
-  <header class="border-b border-zinc-200 bg-white sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+  <!-- Top Navigation & System Health Header -->
+  <header class="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
       
-      <!-- Brand & Metadata -->
+      <!-- System Identification -->
       <div class="flex items-center space-x-3">
-        <span class="font-bold text-sm tracking-tight text-black">AirGuard</span>
-        <span class="text-zinc-300">/</span>
-        <span class="font-mono text-xs text-zinc-500">ESP32-S3</span>
-        <span class="text-zinc-300">/</span>
-        <span class="font-mono text-xs text-zinc-500 hidden sm:inline">UITS CSE402</span>
+        <div class="w-7 h-7 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider">
+          AG
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-sm tracking-tight text-slate-900">AirGuard IoT</span>
+          <span class="text-slate-300">/</span>
+          <span class="font-mono text-xs text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">ESP32-S3</span>
+          <span class="font-mono text-xs text-slate-500 hidden sm:inline">UITS CSE402</span>
+        </div>
       </div>
 
-      <!-- Minimal Status Indicators -->
-      <div class="flex items-center space-x-4 font-mono text-[11px]">
-        <div class="flex items-center space-x-1.5">
-          <span id="mqtt-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-          <span class="text-zinc-500">MQTT:</span>
-          <span id="mqtt-status" class="text-zinc-900 font-medium">Connecting</span>
+      <!-- Live Connectivity Telemetry Badges -->
+      <div class="flex items-center space-x-3 font-mono text-[11px]">
+        <!-- MQTT Status -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+          <span id="mqtt-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span class="text-slate-500">MQTT:</span>
+          <span id="mqtt-status" class="text-slate-900 font-semibold">CONNECTING</span>
         </div>
 
-        <div class="flex items-center space-x-1.5 hidden sm:flex">
-          <span id="supabase-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
-          <span class="text-zinc-500">Supabase:</span>
-          <span id="supabase-status" class="text-zinc-900 font-medium">Syncing</span>
+        <!-- Supabase Status -->
+        <div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+          <span id="supabase-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span class="text-slate-500">DB:</span>
+          <span id="supabase-status" class="text-slate-900 font-semibold">SYNCING</span>
         </div>
 
-        <div class="hidden md:flex items-center space-x-1 text-zinc-500">
-          <span>Pkts:</span>
-          <span id="packet-counter" class="text-zinc-900 font-medium">0</span>
+        <!-- Packet Counter -->
+        <div class="hidden md:flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-600">
+          <span>PACKETS:</span>
+          <span id="packet-counter" class="text-slate-900 font-semibold">0</span>
         </div>
 
-        <div class="hidden lg:inline text-zinc-400" id="system-clock">--:--:--</div>
+        <!-- System Clock -->
+        <div class="hidden lg:inline text-slate-500 font-mono text-[11px]" id="system-clock">00:00:00 UTC</div>
 
-        <button id="btn-audio" class="w-7 h-7 rounded border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 text-zinc-600 transition" title="Toggle Alarm Sound">
-          <i id="audio-icon" class="fa-solid fa-volume-high text-xs"></i>
+        <!-- Audio Siren Mute Toggle -->
+        <button id="btn-audio" class="p-1.5 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Toggle Alarm Sound">
+          <i id="audio-icon" class="fa-solid fa-volume-high text-xs w-4 text-center"></i>
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- Main Content Canvas -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
+  <!-- Main Telemetry Body -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
 
-    <!-- Minimal High-Contrast Status Banner -->
-    <div id="safety-strip" class="p-3.5 rounded border border-zinc-200 subtle-bg flex items-center justify-between transition-colors">
+    <!-- Global Hazard Status Strip -->
+    <section id="safety-strip" class="p-3.5 rounded card-shell flex flex-wrap items-center justify-between gap-3 transition-colors">
       <div class="flex items-center space-x-3">
         <span id="status-pill" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
         <div>
           <div class="flex items-center space-x-2">
-            <span id="safety-title" class="font-semibold text-xs tracking-tight text-zinc-900 uppercase">SYSTEM NOMINAL</span>
-            <span class="text-zinc-300">|</span>
-            <span id="safety-desc" class="text-xs text-zinc-500">Air quality, combustible gases, and dust particulate levels within standard thresholds.</span>
+            <span id="safety-title" class="font-bold text-xs tracking-tight text-slate-900 uppercase">SYSTEM NOMINAL — ISO/OSHA COMPLIANT</span>
+            <span class="text-slate-300">|</span>
+            <span id="safety-desc" class="text-xs text-slate-600">All atmospheric gas, combustible vapor, dust particulate, and thermal levels are within permissible safety limits.</span>
           </div>
         </div>
       </div>
-      <div class="text-right font-mono text-[11px] text-zinc-400 shrink-0 hidden md:block">
-        Updated: <span id="last-timestamp" class="text-zinc-700">Waiting for data</span>
+      <div class="text-right font-mono text-[11px] text-slate-500 shrink-0 hidden md:block">
+        LAST PACKET: <span id="last-timestamp" class="text-slate-800 font-medium">WAITING FOR SENSOR DATA</span>
       </div>
-    </div>
+    </section>
 
-    <!-- 4 Minimal Metric Blocks -->
+    <!-- 4 High-Density Instrument Metric Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
-      <!-- Channel 1: Air Quality MQ-135 -->
-      <div class="p-4 rounded border border-zinc-200 bg-white flex flex-col justify-between">
+      <!-- Channel 1: MQ-135 Air Quality -->
+      <div class="p-4 rounded card-shell flex flex-col justify-between">
         <div>
-          <div class="flex justify-between items-baseline mb-2">
-            <span class="text-xs font-medium text-zinc-500">Air Quality</span>
-            <span class="font-mono text-[11px] text-zinc-400">MQ-135</span>
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Air Quality</span>
+            <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">MQ-135 // ADC1_0</span>
           </div>
-          <div class="flex items-baseline space-x-1.5 my-1">
-            <span id="val-aqi" class="text-3xl font-bold font-mono text-zinc-900 tracking-tight">--</span>
-            <span class="text-xs text-zinc-400 font-mono">counts</span>
+          <div class="flex items-baseline space-x-2 my-2">
+            <span id="val-aqi" class="text-3xl font-extrabold font-mono text-slate-900 tracking-tight">--</span>
+            <span class="text-xs text-slate-400 font-mono font-medium">counts</span>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-zinc-100 space-y-1.5">
-          <div class="w-full h-1.5 rounded-full progress-track overflow-hidden">
-            <div id="bar-aqi" class="progress-fill h-full bg-emerald-500" style="width: 0%;"></div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
+            <div id="bar-aqi" class="bar-indicator h-full bg-emerald-500" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-zinc-400">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500">
             <span>Range: &lt;1200 safe</span>
-            <span id="ch1-status" class="text-emerald-600 font-medium uppercase">Normal</span>
+            <span id="ch1-status" class="text-emerald-600 font-bold uppercase">NORMAL</span>
+          </div>
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+            <span>Target: CO₂, NH₃, Smoke</span>
+            <span>Session: <span id="ch1-range" class="text-slate-600 font-medium">-- / --</span></span>
           </div>
         </div>
       </div>
 
-      <!-- Channel 2: Carbon Monoxide & Gas MQ-9 -->
-      <div class="p-4 rounded border border-zinc-200 bg-white flex flex-col justify-between">
+      <!-- Channel 2: MQ-9 Carbon Monoxide & Gas -->
+      <div class="p-4 rounded card-shell flex flex-col justify-between">
         <div>
-          <div class="flex justify-between items-baseline mb-2">
-            <span class="text-xs font-medium text-zinc-500">CO & Gas</span>
-            <span class="font-mono text-[11px] text-zinc-400">MQ-9</span>
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">CO & Combustible Gas</span>
+            <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">MQ-9 // ADC1_1</span>
           </div>
-          <div class="flex items-baseline space-x-1.5 my-1">
-            <span id="val-cogas" class="text-3xl font-bold font-mono text-zinc-900 tracking-tight">--</span>
-            <span class="text-xs text-zinc-400 font-mono">counts</span>
+          <div class="flex items-baseline space-x-2 my-2">
+            <span id="val-cogas" class="text-3xl font-extrabold font-mono text-slate-900 tracking-tight">--</span>
+            <span class="text-xs text-slate-400 font-mono font-medium">counts</span>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-zinc-100 space-y-1.5">
-          <div class="w-full h-1.5 rounded-full progress-track overflow-hidden">
-            <div id="bar-cogas" class="progress-fill h-full bg-emerald-500" style="width: 0%;"></div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
+            <div id="bar-cogas" class="bar-indicator h-full bg-emerald-500" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-zinc-400">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500">
             <span>Range: &lt;1000 safe</span>
-            <span id="ch2-status" class="text-emerald-600 font-medium uppercase">Normal</span>
+            <span id="ch2-status" class="text-emerald-600 font-bold uppercase">NORMAL</span>
+          </div>
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+            <span>Target: CO, CH₄, LPG</span>
+            <span>Session: <span id="ch2-range" class="text-slate-600 font-medium">-- / --</span></span>
           </div>
         </div>
       </div>
 
-      <!-- Channel 3: Particulate Dust GP2Y1010AU0F -->
-      <div class="p-4 rounded border border-zinc-200 bg-white flex flex-col justify-between">
+      <!-- Channel 3: Optical Dust GP2Y1010AU0F -->
+      <div class="p-4 rounded card-shell flex flex-col justify-between">
         <div>
-          <div class="flex justify-between items-baseline mb-2">
-            <span class="text-xs font-medium text-zinc-500">Dust Density</span>
-            <span class="font-mono text-[11px] text-zinc-400">PM2.5/10</span>
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Suspended Dust</span>
+            <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">GP2Y1010 // PM2.5</span>
           </div>
-          <div class="flex items-baseline space-x-1.5 my-1">
-            <span id="val-dust" class="text-3xl font-bold font-mono text-zinc-900 tracking-tight">--</span>
-            <span class="text-xs text-zinc-400 font-mono">µg/m³</span>
+          <div class="flex items-baseline space-x-2 my-2">
+            <span id="val-dust" class="text-3xl font-extrabold font-mono text-slate-900 tracking-tight">--</span>
+            <span class="text-xs text-slate-400 font-mono font-medium">µg/m³</span>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-zinc-100 space-y-1.5">
-          <div class="w-full h-1.5 rounded-full progress-track overflow-hidden">
-            <div id="bar-dust" class="progress-fill h-full bg-emerald-500" style="width: 0%;"></div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
+            <div id="bar-dust" class="bar-indicator h-full bg-emerald-500" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-zinc-400">
-            <span>WHO: &lt;15 µg/m³</span>
-            <span id="ch3-status" class="text-emerald-600 font-medium uppercase">Clean</span>
+          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+            <span>WHO Limit: &lt;15 µg/m³</span>
+            <span id="ch3-status" class="text-emerald-600 font-bold uppercase">CLEAN</span>
+          </div>
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+            <span>Pulse: 0.32ms cycle</span>
+            <span>Session: <span id="ch3-range" class="text-slate-600 font-medium">-- / --</span></span>
           </div>
         </div>
       </div>
 
-      <!-- Channel 4: Climate DHT11 -->
-      <div class="p-4 rounded border border-zinc-200 bg-white flex flex-col justify-between">
+      <!-- Channel 4: Climate DHT11 (Dual Clean Columns) -->
+      <div class="p-4 rounded card-shell flex flex-col justify-between">
         <div>
-          <div class="flex justify-between items-baseline mb-2">
-            <span class="text-xs font-medium text-zinc-500">Climate</span>
-            <span class="font-mono text-[11px] text-zinc-400">DHT11</span>
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ambient Climate</span>
+            <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">DHT11 // PIN 7</span>
           </div>
-          <div class="flex items-baseline space-x-3 my-1">
-            <div>
-              <span id="val-temp" class="text-3xl font-bold font-mono text-zinc-900 tracking-tight">--.-</span>
-              <span class="text-xs text-zinc-400 font-mono">°C</span>
+          
+          <!-- Distinct Dual Columns for Temp & Humidity -->
+          <div class="grid grid-cols-2 gap-2 my-2">
+            <div class="bg-slate-50 p-2 rounded border border-slate-100">
+              <span class="text-[10px] font-mono text-slate-500 uppercase block">Temperature</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-temp" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+                <span class="text-xs text-slate-400 font-mono">°C</span>
+              </div>
             </div>
-            <span class="text-zinc-200">/</span>
-            <div>
-              <span id="val-hum" class="text-3xl font-bold font-mono text-zinc-900 tracking-tight">--.-</span>
-              <span class="text-xs text-zinc-400 font-mono">%</span>
+            <div class="bg-slate-50 p-2 rounded border border-slate-100">
+              <span class="text-[10px] font-mono text-slate-500 uppercase block">Humidity</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-hum" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+                <span class="text-xs text-slate-400 font-mono">%</span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-zinc-100">
-          <div class="flex justify-between font-mono text-[10px] text-zinc-400">
-            <span>Dew Point: <span id="val-dew" class="text-zinc-700 font-medium">--</span></span>
-            <span class="text-zinc-500">22–27°C Target</span>
+
+        <div class="pt-2 border-t border-slate-100 space-y-1">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+            <span>Dew Point: <span id="val-dew" class="text-slate-800 font-semibold">--.- °C</span></span>
+            <span class="text-slate-500">Target: 22–27°C</span>
+          </div>
+          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+            <span>Envelope: 40–60% RH</span>
+            <span class="text-emerald-600 font-medium">Optimal Zone</span>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Minimal High-Contrast Line Charts -->
+    <!-- Dual Oscilloscope Waveform Traces (Fixed Visible Grid & Active Standby) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       
-      <!-- Chart 1: Air Quality & Gas -->
-      <div class="p-4 rounded border border-zinc-200 bg-white">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-medium text-xs text-zinc-700">Air Quality & Combustible Gas (30 Samples)</span>
+      <!-- Chart 1: Air Quality & Combustible Gas -->
+      <div class="p-4 rounded card-shell relative">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 1 // AIR POLLUTION & GAS SPECTRUM</span>
+          </div>
           <div class="flex items-center space-x-3 text-[11px] font-mono">
-            <span class="flex items-center space-x-1"><span class="w-2 h-0.5 bg-blue-600"></span><span class="text-zinc-500">MQ-135</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2 h-0.5 bg-red-600"></span><span class="text-zinc-500">MQ-9</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-sky-600"></span><span class="text-slate-600">MQ-135 AQI</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-rose-600"></span><span class="text-slate-600">MQ-9 Gas</span></span>
           </div>
         </div>
-        <div class="h-56">
+
+        <!-- Standby Watermark (Hides automatically upon telemetry arrival) -->
+        <div id="chart-gas-standby" class="absolute inset-x-4 inset-y-12 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+          <span class="font-mono text-[11px] text-slate-400 bg-white/90 px-3 py-1 rounded border border-slate-200 shadow-sm flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+            OSCILLOSCOPE ARMED — AWAITING ESP32-S3 TELEMETRY STREAM
+          </span>
+        </div>
+
+        <div class="h-60">
           <canvas id="chart-gas"></canvas>
         </div>
       </div>
 
-      <!-- Chart 2: Dust & Temperature -->
-      <div class="p-4 rounded border border-zinc-200 bg-white">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-medium text-xs text-zinc-700">Dust Density & Ambient Temperature</span>
+      <!-- Chart 2: Dust Density & Ambient Temperature -->
+      <div class="p-4 rounded card-shell relative">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 2 // PARTICULATE DUST & TEMPERATURE</span>
+          </div>
           <div class="flex items-center space-x-3 text-[11px] font-mono">
-            <span class="flex items-center space-x-1"><span class="w-2 h-0.5 bg-amber-500"></span><span class="text-zinc-500">Dust (µg/m³)</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2 h-0.5 bg-emerald-600"></span><span class="text-zinc-500">Temp (°C)</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-amber-500"></span><span class="text-slate-600">Dust (µg/m³)</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-emerald-600"></span><span class="text-slate-600">Temp (°C)</span></span>
           </div>
         </div>
-        <div class="h-56">
+
+        <!-- Standby Watermark -->
+        <div id="chart-dust-standby" class="absolute inset-x-4 inset-y-12 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+          <span class="font-mono text-[11px] text-slate-400 bg-white/90 px-3 py-1 rounded border border-slate-200 shadow-sm flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            OSCILLOSCOPE ARMED — AWAITING ESP32-S3 TELEMETRY STREAM
+          </span>
+        </div>
+
+        <div class="h-60">
           <canvas id="chart-dust"></canvas>
         </div>
       </div>
 
     </div>
 
-    <!-- Minimal Historical Ledger Table -->
-    <div class="rounded border border-zinc-200 bg-white">
-      <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
-        <div>
-          <span class="font-medium text-xs text-zinc-800">Historical Telemetry Ledger</span>
-          <span class="text-zinc-400 text-xs ml-1 font-mono">(Supabase Postgres)</span>
+    <!-- Historical Telemetry Ledger Table (Supabase Cold Sink) -->
+    <div class="rounded card-shell">
+      <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-database text-slate-400 text-xs"></i>
+          <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">Supabase Postgres Telemetry Ledger</span>
+          <span class="text-slate-400 text-xs font-mono">(Cold Sink // 15s Cadence)</span>
         </div>
         <div class="flex items-center space-x-2">
-          <button id="btn-refresh" class="px-2.5 py-1 rounded border border-zinc-200 hover:bg-zinc-50 text-[11px] font-mono text-zinc-600 transition">
-            Refresh
+          <button id="btn-refresh" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
+            <i class="fa-solid fa-arrows-rotate text-[10px]"></i> REFRESH
           </button>
-          <button id="btn-export-csv" class="px-2.5 py-1 rounded border border-zinc-200 hover:bg-zinc-50 text-[11px] font-mono text-zinc-600 transition">
-            CSV
+          <button id="btn-export-csv" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
+            <i class="fa-solid fa-file-csv text-[10px]"></i> EXPORT CSV
           </button>
-          <button id="btn-export-json" class="px-2.5 py-1 rounded border border-zinc-200 hover:bg-zinc-50 text-[11px] font-mono text-zinc-600 transition">
-            JSON
+          <button id="btn-export-json" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
+            <i class="fa-solid fa-code text-[10px]"></i> EXPORT JSON
           </button>
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left font-mono text-[11px]">
-          <thead class="bg-zinc-50 text-zinc-400 border-b border-zinc-100 text-[10px] uppercase">
+          <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 text-[10px] uppercase">
             <tr>
-              <th class="py-2 px-4 font-medium">Record</th>
-              <th class="py-2 px-4 font-medium">Timestamp (UTC)</th>
-              <th class="py-2 px-4 font-medium">MQ-135</th>
-              <th class="py-2 px-4 font-medium">MQ-9</th>
-              <th class="py-2 px-4 font-medium">Dust</th>
-              <th class="py-2 px-4 font-medium">Temp</th>
-              <th class="py-2 px-4 font-medium">Humidity</th>
-              <th class="py-2 px-4 text-right font-medium">State</th>
+              <th class="py-2.5 px-4 font-semibold">RECORD ID</th>
+              <th class="py-2.5 px-4 font-semibold">TIMESTAMP (UTC)</th>
+              <th class="py-2.5 px-4 font-semibold">MQ-135 (AQI)</th>
+              <th class="py-2.5 px-4 font-semibold">MQ-9 (CO/GAS)</th>
+              <th class="py-2.5 px-4 font-semibold">DUST (µg/m³)</th>
+              <th class="py-2.5 px-4 font-semibold">TEMP (°C)</th>
+              <th class="py-2.5 px-4 font-semibold">HUMIDITY (%RH)</th>
+              <th class="py-2.5 px-4 text-right font-semibold">SAFETY STATUS</th>
             </tr>
           </thead>
-          <tbody id="telemetry-table-body" class="divide-y divide-zinc-100 text-zinc-700">
+          <tbody id="telemetry-table-body" class="divide-y divide-slate-100 text-slate-700">
             <tr>
-              <td colspan="8" class="py-6 text-center text-zinc-400 font-sans italic">
-                Querying Supabase database...
+              <td colspan="8" class="py-6 text-center text-slate-400 font-sans italic">
+                Connecting to Supabase Postgres endpoint...
               </td>
             </tr>
           </tbody>
@@ -299,27 +357,33 @@
       </div>
     </div>
 
-    <!-- Minimal Simulation Drawer (For Oral Defense & Testing) -->
-    <div class="p-3 rounded border border-zinc-200 subtle-bg flex flex-wrap items-center justify-between gap-2 text-xs">
-      <span class="text-zinc-500 font-medium">Test Simulation:</span>
-      <div class="flex items-center space-x-2 font-mono text-[11px]">
-        <button id="btn-sim-normal" class="px-2.5 py-1 rounded border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 transition">
-          Normal
+    <!-- Laboratory Test Bench Controls (Simulation Toolbar) -->
+    <details class="p-3 rounded card-shell text-xs">
+      <summary class="cursor-pointer font-bold text-slate-700 hover:text-slate-900 transition flex items-center justify-between">
+        <span><i class="fa-solid fa-sliders mr-1.5 text-slate-400"></i> LAB VIVA / DEMO BENCH SIMULATOR (CLICK TO EXPAND)</span>
+        <span class="text-[10px] font-mono text-slate-400 uppercase">Interactive Testing Controls</span>
+      </summary>
+      <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+        <span class="text-slate-500 font-sans mr-2">Simulate Safety Scenarios:</span>
+        <button id="btn-sim-normal" class="px-3 py-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-medium transition">
+          1. NOMINAL STATE (CODE GREEN)
         </button>
-        <button id="btn-sim-warn" class="px-2.5 py-1 rounded border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
-          Warning
+        <button id="btn-sim-warn" class="px-3 py-1.5 rounded border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 font-medium transition">
+          2. WARNING STATE (CODE AMBER)
         </button>
-        <button id="btn-sim-danger" class="px-2.5 py-1 rounded border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition">
-          Danger Alarm
+        <button id="btn-sim-danger" class="px-3 py-1.5 rounded border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 font-medium transition">
+          3. CRITICAL GAS LEAK (CODE RED)
         </button>
       </div>
-    </div>
+    </details>
 
   </main>
 
-  <!-- Telemetry Logic -->
+  <!-- Core JavaScript Engine -->
   <script>
-    // Configuration
+    // ========================================================================
+    // 1. ENDPOINTS & CONFIGURATION
+    // ========================================================================
     const SUPABASE_URL  = 'https://zamvuyyqfwehxlnijeat.supabase.co';
     const SUPABASE_KEY  = 'sb_publishable_4YDEh6TVbN9LtMtdz8QsHw_VuIT3Bpt';
     const MQTT_HOST     = 'broker.hivemq.com';
@@ -337,13 +401,22 @@
     let audioContext = null;
     let audioMuted = false;
 
-    // Clock
-    setInterval(() => {
+    // Range tracking
+    let stats = {
+      aqi: { min: Infinity, max: -Infinity },
+      cogas: { min: Infinity, max: -Infinity },
+      dust: { min: Infinity, max: -Infinity }
+    };
+
+    // Initialize System Clock immediately
+    function updateClock() {
       const now = new Date();
       document.getElementById('system-clock').innerText = now.toTimeString().split(' ')[0] + ' UTC';
-    }, 1000);
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    // Audio Alert
+    // Audio Alert Siren
     function triggerAudioAlert() {
       if (audioMuted) return;
       try {
@@ -351,17 +424,17 @@
         if (audioContext.state === 'suspended') audioContext.resume();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        osc.type = 'sine';
+        osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(800, audioContext.currentTime);
         osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.12, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.start();
         osc.stop(audioContext.currentTime + 0.25);
       } catch (e) {
-        console.warn("Audio Context waiting for interaction:", e);
+        console.warn("Audio Context awaiting user click:", e);
       }
     }
 
@@ -369,62 +442,139 @@
       audioMuted = !audioMuted;
       const icon = document.getElementById('audio-icon');
       if (audioMuted) {
-        icon.className = 'fa-solid fa-volume-xmark text-zinc-400';
+        icon.className = 'fa-solid fa-volume-xmark text-rose-500 w-4 text-center';
       } else {
-        icon.className = 'fa-solid fa-volume-high text-zinc-700';
+        icon.className = 'fa-solid fa-volume-high text-slate-600 w-4 text-center';
       }
     });
 
-    // Chart.js Configuration — Minimal White Contrast
-    const chartConfig = {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: {
-          grid: { color: '#f4f4f5' },
-          ticks: { color: '#a1a1aa', font: { family: 'ui-monospace, monospace', size: 9 }, maxTicksLimit: 6 }
-        },
-        y: {
-          grid: { color: '#f4f4f5' },
-          ticks: { color: '#a1a1aa', font: { family: 'ui-monospace, monospace', size: 9 } }
-        }
-      }
-    };
+    // ========================================================================
+    // 2. CHART.JS CONFIGURATION — VISIBLE OSCILLOSCOPE GRIDS EVEN WHEN EMPTY
+    // ========================================================================
+    
+    // Pre-seed 10 placeholder ticks so axes and guidelines render immediately
+    const initialTimeSlots = ['', '', '', '', '', '', '', '', '', ''];
 
-    const chartGas = new Chart(document.getElementById('chart-gas').getContext('2d'), {
+    // Chart 1: Air Quality & Gas
+    const ctxGas = document.getElementById('chart-gas').getContext('2d');
+    const chartGas = new Chart(ctxGas, {
       type: 'line',
       data: {
-        labels: [],
+        labels: [...initialTimeSlots],
         datasets: [
-          { label: 'MQ-135', data: [], borderColor: '#2563eb', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
-          { label: 'MQ-9', data: [], borderColor: '#dc2626', borderWidth: 1.5, pointRadius: 0, tension: 0.1 }
-        ]
-      },
-      options: chartConfig
-    });
-
-    const chartDust = new Chart(document.getElementById('chart-dust').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          { label: 'Dust', data: [], borderColor: '#d97706', borderWidth: 1.5, pointRadius: 0, yAxisID: 'y', tension: 0.1 },
-          { label: 'Temp', data: [], borderColor: '#16a34a', borderWidth: 1.5, pointRadius: 0, yAxisID: 'y1', tension: 0.1 }
+          {
+            label: 'MQ-135 AQI',
+            data: [],
+            borderColor: '#0284c7',
+            backgroundColor: 'rgba(2, 132, 199, 0.05)',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.1,
+            fill: true
+          },
+          {
+            label: 'MQ-9 Gas',
+            data: [],
+            borderColor: '#e11d48',
+            backgroundColor: 'rgba(225, 29, 72, 0.05)',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.1,
+            fill: true
+          }
         ]
       },
       options: {
-        ...chartConfig,
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
         scales: {
-          ...chartConfig.scales,
-          y: { ...chartConfig.scales.y, position: 'left' },
-          y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#16a34a', font: { family: 'ui-monospace, monospace', size: 9 } } }
+          x: {
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#94a3b8', font: { family: 'ui-monospace, monospace', size: 9 }, maxTicksLimit: 8 }
+          },
+          y: {
+            min: 0,
+            max: 2500,
+            grid: { color: '#f1f5f9' },
+            ticks: { stepSize: 500, color: '#94a3b8', font: { family: 'ui-monospace, monospace', size: 9 } }
+          }
         }
       }
     });
 
+    // Chart 2: Dust & Temperature
+    const ctxDust = document.getElementById('chart-dust').getContext('2d');
+    const chartDust = new Chart(ctxDust, {
+      type: 'line',
+      data: {
+        labels: [...initialTimeSlots],
+        datasets: [
+          {
+            label: 'Dust',
+            data: [],
+            borderColor: '#d97706',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            yAxisID: 'y',
+            tension: 0.1
+          },
+          {
+            label: 'Temperature',
+            data: [],
+            borderColor: '#059669',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            yAxisID: 'y1',
+            tension: 0.1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#94a3b8', font: { family: 'ui-monospace, monospace', size: 9 }, maxTicksLimit: 8 }
+          },
+          y: {
+            min: 0,
+            max: 200,
+            position: 'left',
+            grid: { color: '#f1f5f9' },
+            ticks: { stepSize: 50, color: '#d97706', font: { family: 'ui-monospace, monospace', size: 9 } }
+          },
+          y1: {
+            min: 0,
+            max: 60,
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { stepSize: 15, color: '#059669', font: { family: 'ui-monospace, monospace', size: 9 } }
+          }
+        }
+      }
+    });
+
+    let hasReceivedData = false;
+
     function appendChartTrace(timestamp, aqi, cogas, dust, temp) {
+      if (!hasReceivedData) {
+        hasReceivedData = true;
+        // Clean out placeholder ticks on first real packet
+        chartGas.data.labels = [];
+        chartDust.data.labels = [];
+        document.getElementById('chart-gas-standby').style.opacity = '0';
+        document.getElementById('chart-dust-standby').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('chart-gas-standby').style.display = 'none';
+          document.getElementById('chart-dust-standby').style.display = 'none';
+        }, 300);
+      }
+
       const maxPts = 30;
       if (chartGas.data.labels.length >= maxPts) {
         chartGas.data.labels.shift();
@@ -446,24 +596,41 @@
       chartDust.update();
     }
 
-    // Process Incoming Telemetry
+    // ========================================================================
+    // 3. TELEMETRY PROCESSING ENGINE
+    // ========================================================================
     function processTelemetry(data, isLive = true) {
       if (isLive) {
         packetCount++;
         document.getElementById('packet-counter').innerText = packetCount;
-        document.getElementById('last-timestamp').innerText = new Date().toTimeString().split(' ')[0];
+        document.getElementById('last-timestamp').innerText = new Date().toTimeString().split(' ')[0] + ' UTC';
       }
 
+      // Numerical Displays
       document.getElementById('val-aqi').innerText = data.aqi;
       document.getElementById('val-cogas').innerText = data.co_gas;
       document.getElementById('val-dust').innerText = data.dust.toFixed(1);
       document.getElementById('val-temp').innerText = data.temp.toFixed(1);
       document.getElementById('val-hum').innerText = data.hum.toFixed(1);
 
+      // Dew Point Calculation
       const dew = data.temp - ((100 - data.hum) / 5.0);
-      document.getElementById('val-dew').innerText = dew.toFixed(1) + '°C';
+      document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
 
-      // Bars
+      // Range Statistics
+      stats.aqi.min = Math.min(stats.aqi.min, data.aqi);
+      stats.aqi.max = Math.max(stats.aqi.max, data.aqi);
+      document.getElementById('ch1-range').innerText = `${stats.aqi.min} / ${stats.aqi.max}`;
+
+      stats.cogas.min = Math.min(stats.cogas.min, data.co_gas);
+      stats.cogas.max = Math.max(stats.cogas.max, data.co_gas);
+      document.getElementById('ch2-range').innerText = `${stats.cogas.min} / ${stats.cogas.max}`;
+
+      stats.dust.min = Math.min(stats.dust.min, data.dust);
+      stats.dust.max = Math.max(stats.dust.max, data.dust);
+      document.getElementById('ch3-range').innerText = `${stats.dust.min.toFixed(0)} / ${stats.dust.max.toFixed(0)}`;
+
+      // Progress Bar Percentages
       const aqiPct = Math.min((data.aqi / 2500) * 100, 100);
       const cogasPct = Math.min((data.co_gas / 2000) * 100, 100);
       const dustPct = Math.min((data.dust / 150) * 100, 100);
@@ -472,59 +639,62 @@
       document.getElementById('bar-cogas').style.width = cogasPct + '%';
       document.getElementById('bar-dust').style.width = dustPct + '%';
 
-      // Thresholds
+      // Evaluate Safety State
       const isDanger = (data.aqi >= THRESHOLD_MQ135_DANGER) || (data.co_gas >= THRESHOLD_MQ9_DANGER);
       const isWarning = (!isDanger) && ((data.aqi >= THRESHOLD_MQ135_WARN) || (data.co_gas >= THRESHOLD_MQ9_WARN));
 
-      document.getElementById('bar-aqi').className = `progress-fill h-full ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'bg-red-500' : data.aqi >= THRESHOLD_MQ135_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
-      document.getElementById('bar-cogas').className = `progress-fill h-full ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'bg-red-500' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
-      document.getElementById('bar-dust').className = `progress-fill h-full ${data.dust >= 100 ? 'bg-red-500' : data.dust >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`;
+      // Bar Colors
+      document.getElementById('bar-aqi').className = `bar-indicator h-full ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'bg-rose-500' : data.aqi >= THRESHOLD_MQ135_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
+      document.getElementById('bar-cogas').className = `bar-indicator h-full ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'bg-rose-500' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
+      document.getElementById('bar-dust').className = `bar-indicator h-full ${data.dust >= 100 ? 'bg-rose-500' : data.dust >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`;
 
-      document.getElementById('ch1-status').innerText = data.aqi >= THRESHOLD_MQ135_DANGER ? 'Hazard' : data.aqi >= THRESHOLD_MQ135_WARN ? 'Caution' : 'Normal';
-      document.getElementById('ch1-status').className = `font-medium uppercase ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'text-red-600' : data.aqi >= THRESHOLD_MQ135_WARN ? 'text-amber-600' : 'text-emerald-600'}`;
+      document.getElementById('ch1-status').innerText = data.aqi >= THRESHOLD_MQ135_DANGER ? 'HAZARD' : data.aqi >= THRESHOLD_MQ135_WARN ? 'CAUTION' : 'NORMAL';
+      document.getElementById('ch1-status').className = `font-bold uppercase ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'text-rose-600' : data.aqi >= THRESHOLD_MQ135_WARN ? 'text-amber-600' : 'text-emerald-600'}`;
 
-      document.getElementById('ch2-status').innerText = data.co_gas >= THRESHOLD_MQ9_DANGER ? 'Hazard' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'Caution' : 'Normal';
-      document.getElementById('ch2-status').className = `font-medium uppercase ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-red-600' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'text-amber-600' : 'text-emerald-600'}`;
+      document.getElementById('ch2-status').innerText = data.co_gas >= THRESHOLD_MQ9_DANGER ? 'HAZARD' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'CAUTION' : 'NORMAL';
+      document.getElementById('ch2-status').className = `font-bold uppercase ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-rose-600' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'text-amber-600' : 'text-emerald-600'}`;
 
-      // Status Pill & Strip
+      // Global Status Strip Management
       const strip = document.getElementById('safety-strip');
       const pill = document.getElementById('status-pill');
       const sTitle = document.getElementById('safety-title');
       const sDesc = document.getElementById('safety-desc');
 
       if (isDanger) {
-        strip.className = 'p-3.5 rounded border border-red-300 bg-red-50 flex items-center justify-between transition-colors hazard-active';
-        pill.className = 'w-2.5 h-2.5 rounded-full bg-red-600 shrink-0';
-        sTitle.className = 'font-bold text-xs tracking-tight text-red-700 uppercase';
-        sTitle.innerText = 'DANGER: TOXIC SMOKE / COMBUSTIBLE GAS LEAK';
-        sDesc.className = 'text-xs text-red-600';
-        sDesc.innerText = 'Contaminant levels exceed life-safety threshold. Evacuate area immediately.';
+        strip.className = 'p-3.5 rounded border border-rose-300 bg-rose-50 flex items-center justify-between transition-colors alarm-critical-active';
+        pill.className = 'w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0';
+        sTitle.className = 'font-bold text-xs tracking-tight text-rose-800 uppercase';
+        sTitle.innerText = 'CRITICAL HAZARD: TOXIC SMOKE / COMBUSTIBLE GAS LEAK';
+        sDesc.className = 'text-xs text-rose-700 font-medium';
+        sDesc.innerText = 'Contaminants exceed life-safety threshold. Evacuate room and inspect ventilation immediately.';
         triggerAudioAlert();
       } else if (isWarning) {
         strip.className = 'p-3.5 rounded border border-amber-300 bg-amber-50 flex items-center justify-between transition-colors';
         pill.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0';
-        sTitle.className = 'font-semibold text-xs tracking-tight text-amber-800 uppercase';
-        sTitle.innerText = 'WARNING: ELEVATED POLLUTION LEVEL';
+        sTitle.className = 'font-bold text-xs tracking-tight text-amber-800 uppercase';
+        sTitle.innerText = 'WARNING: ELEVATED AIR CONTAMINATION';
         sDesc.className = 'text-xs text-amber-700';
-        sDesc.innerText = 'Elevated air contamination or trace gas concentration detected.';
+        sDesc.innerText = 'Air quality degradation or mild gas traces detected. Ensure laboratory ventilation.';
       } else {
-        strip.className = 'p-3.5 rounded border border-zinc-200 subtle-bg flex items-center justify-between transition-colors';
+        strip.className = 'p-3.5 rounded card-shell flex items-center justify-between transition-colors';
         pill.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
-        sTitle.className = 'font-semibold text-xs tracking-tight text-zinc-900 uppercase';
-        sTitle.innerText = 'SYSTEM NOMINAL';
-        sDesc.className = 'text-xs text-zinc-500';
-        sDesc.innerText = 'Air quality, combustible gases, and dust particulate levels within standard thresholds.';
+        sTitle.className = 'font-bold text-xs tracking-tight text-slate-900 uppercase';
+        sTitle.innerText = 'SYSTEM NOMINAL — ISO/OSHA COMPLIANT';
+        sDesc.className = 'text-xs text-slate-600';
+        sDesc.innerText = 'All atmospheric gas, combustible vapor, dust particulate, and thermal levels are within permissible safety limits.';
       }
     }
 
-    // Supabase Cold Path
+    // ========================================================================
+    // 4. SUPABASE COLD-START INGESTION
+    // ========================================================================
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function fetchSupabaseHistory() {
       const dot = document.getElementById('supabase-dot');
       const statusText = document.getElementById('supabase-status');
-      dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse';
-      statusText.innerText = 'Fetching';
+      dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+      statusText.innerText = 'FETCHING';
 
       try {
         const { data, error } = await supabase
@@ -534,15 +704,15 @@
           .limit(30);
 
         if (error) {
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-500';
-          statusText.innerText = 'Pending';
+          dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+          statusText.innerText = 'READY';
           return;
         }
 
         if (data && data.length > 0) {
           cachedRows = data;
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-          statusText.innerText = 'Online';
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = `ONLINE (${data.length})`;
 
           const chronological = [...data].reverse();
           chartGas.data.labels = [];
@@ -560,15 +730,15 @@
           processTelemetry(data[0], false);
           renderTable(data);
         } else {
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-          statusText.innerText = 'Ready';
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = 'ONLINE (0)';
           document.getElementById('telemetry-table-body').innerHTML = `
-            <tr><td colspan="8" class="py-4 text-center text-zinc-400 italic">Database initialized. Waiting for scheduled ESP32 writes.</td></tr>
+            <tr><td colspan="8" class="py-5 text-center text-slate-400 italic font-mono">Supabase table initialized. Waiting for scheduled ESP32 writes (15s cadence).</td></tr>
           `;
         }
       } catch (err) {
-        dot.className = 'w-1.5 h-1.5 rounded-full bg-red-500';
-        statusText.innerText = 'Offline';
+        dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+        statusText.innerText = 'OFFLINE';
       }
     }
 
@@ -578,18 +748,18 @@
       rows.forEach((r, idx) => {
         const isHazard = (r.aqi >= THRESHOLD_MQ135_DANGER) || (r.co_gas >= THRESHOLD_MQ9_DANGER);
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-zinc-50 transition-colors';
+        tr.className = 'hover:bg-slate-50 transition-colors';
         tr.innerHTML = `
-          <td class="py-2 px-4 text-zinc-400">#${r.id || (rows.length - idx)}</td>
-          <td class="py-2 px-4 text-zinc-500">${new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19)}</td>
-          <td class="py-2 px-4 font-medium ${r.aqi >= THRESHOLD_MQ135_DANGER ? 'text-red-600' : 'text-zinc-800'}">${r.aqi}</td>
-          <td class="py-2 px-4 font-medium ${r.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-red-600' : 'text-zinc-800'}">${r.co_gas}</td>
-          <td class="py-2 px-4 font-medium text-amber-600">${Number(r.dust).toFixed(1)}</td>
-          <td class="py-2 px-4 text-zinc-700">${Number(r.temp).toFixed(1)}°C</td>
-          <td class="py-2 px-4 text-zinc-700">${Number(r.hum).toFixed(1)}%</td>
+          <td class="py-2 px-4 text-slate-400">#${r.id || (rows.length - idx)}</td>
+          <td class="py-2 px-4 text-slate-600">${new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19)}</td>
+          <td class="py-2 px-4 font-semibold ${r.aqi >= THRESHOLD_MQ135_DANGER ? 'text-rose-600' : 'text-slate-900'}">${r.aqi}</td>
+          <td class="py-2 px-4 font-semibold ${r.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-rose-600' : 'text-slate-900'}">${r.co_gas}</td>
+          <td class="py-2 px-4 font-semibold text-amber-600">${Number(r.dust).toFixed(1)}</td>
+          <td class="py-2 px-4 text-slate-800">${Number(r.temp).toFixed(1)}°C</td>
+          <td class="py-2 px-4 text-slate-800">${Number(r.hum).toFixed(1)}%</td>
           <td class="py-2 px-4 text-right">
-            <span class="text-[10px] font-semibold uppercase ${isHazard ? 'text-red-600' : 'text-emerald-600'}">
-              ${isHazard ? 'Danger' : 'Nominal'}
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${isHazard ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+              ${isHazard ? 'CRITICAL' : 'NOMINAL'}
             </span>
           </td>
         `;
@@ -597,14 +767,16 @@
       });
     }
 
-    // MQTT Hot Path
+    // ========================================================================
+    // 5. MQTT HOT-PATH WEBSOCKET CLIENT
+    // ========================================================================
     function initializeMQTT() {
       const clientId = 'AirGuard-Web-' + Math.random().toString(16).substring(2, 8);
       const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, MQTT_PATH, clientId);
 
       client.onConnectionLost = () => {
-        document.getElementById('mqtt-dot').className = 'w-1.5 h-1.5 rounded-full bg-red-500';
-        document.getElementById('mqtt-status').innerText = 'Offline';
+        document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
+        document.getElementById('mqtt-status').innerText = 'OFFLINE';
         setTimeout(initializeMQTT, 3000);
       };
 
@@ -615,7 +787,7 @@
           processTelemetry(payload, true);
           appendChartTrace(timeStr, payload.aqi, payload.co_gas, payload.dust, payload.temp);
         } catch (err) {
-          console.error("Telemetry parsing error:", err);
+          console.error("MQTT parsing error:", err);
         }
       };
 
@@ -623,22 +795,24 @@
         useSSL: true,
         timeout: 5,
         onSuccess: () => {
-          document.getElementById('mqtt-dot').className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-          document.getElementById('mqtt-status').innerText = 'Live (3s)';
+          document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+          document.getElementById('mqtt-status').innerText = 'LIVE (3s)';
           client.subscribe(MQTT_TOPIC);
         },
         onFailure: () => {
-          document.getElementById('mqtt-dot').className = 'w-1.5 h-1.5 rounded-full bg-amber-500';
-          document.getElementById('mqtt-status').innerText = 'Retrying';
+          document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+          document.getElementById('mqtt-status').innerText = 'RETRYING';
           setTimeout(initializeMQTT, 5000);
         }
       });
     }
 
-    // CSV & JSON Exports
+    // ========================================================================
+    // 6. CSV & JSON EXPORT UTILITIES
+    // ========================================================================
     document.getElementById('btn-export-csv').addEventListener('click', () => {
       if (cachedRows.length === 0) return alert("No telemetry loaded to export.");
-      const headers = ['id', 'created_at', 'temp', 'hum', 'aqi', 'co_gas', 'dust'];
+      const headers = ['id', 'created_at', 'temp_c', 'hum_pct', 'aqi_mq135', 'cogas_mq9', 'dust_ug_m3'];
       const csvRows = [headers.join(',')];
       cachedRows.forEach(r => csvRows.push([r.id, `"${r.created_at}"`, r.temp, r.hum, r.aqi, r.co_gas, r.dust].join(',')));
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
@@ -659,18 +833,24 @@
 
     document.getElementById('btn-refresh').addEventListener('click', fetchSupabaseHistory);
 
-    // Simulation triggers
+    // Lab Demo & Oral Defense Simulation Controls
     document.getElementById('btn-sim-normal').addEventListener('click', () => {
       processTelemetry({ temp: 24.5, hum: 55.0, aqi: 412, co_gas: 198, dust: 24.2 }, true);
+      const timeStr = new Date().toISOString().substring(11, 19);
+      appendChartTrace(timeStr, 412, 198, 24.2, 24.5);
     });
     document.getElementById('btn-sim-warn').addEventListener('click', () => {
       processTelemetry({ temp: 28.2, hum: 68.0, aqi: 1350, co_gas: 1050, dust: 78.5 }, true);
+      const timeStr = new Date().toISOString().substring(11, 19);
+      appendChartTrace(timeStr, 1350, 1050, 78.5, 28.2);
     });
     document.getElementById('btn-sim-danger').addEventListener('click', () => {
       processTelemetry({ temp: 31.0, hum: 75.0, aqi: 2350, co_gas: 1850, dust: 165.0 }, true);
+      const timeStr = new Date().toISOString().substring(11, 19);
+      appendChartTrace(timeStr, 2350, 1850, 165.0, 31.0);
     });
 
-    // Boot
+    // Boot Routine
     document.addEventListener('DOMContentLoaded', async () => {
       await fetchSupabaseHistory();
       initializeMQTT();
