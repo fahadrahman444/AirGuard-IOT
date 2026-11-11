@@ -175,12 +175,12 @@ For a complete step-by-step wiring guide, ASCII pin connection diagrams, and bre
 7. Click **Verify** $\rightarrow$ **Upload**. Open Serial Monitor at **115200 baud**.
 
 ### Step 3: Launching the Real-Time Web Dashboard (GitHub Pages)
-The web application is engineered as a zero-dependency, production-grade SCADA telemetry terminal that deploys directly onto **GitHub Pages**:
+The web application is engineered as a zero-dependency, production-grade SCADA telemetry terminal deployed directly onto **GitHub Pages** via **GitHub Actions**:
 
-* **Live GitHub Pages URL:** `https://fahadrahman444.github.io/AirGuard-IOT/`
-* **Automated CI/CD Workflow:** [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) automatically compiles and deploys the `web/` application on every push to `main`.
-* **Manual GitHub Pages Setup:** Under repository **Settings $\rightarrow$ Pages**, set **Source** to `GitHub Actions` (or choose `Deploy from a branch` $\rightarrow$ branch `main` $\rightarrow$ folder `/docs`).
-* **Local Run:** You can also open [`web/index.html`](web/index.html) (or [`docs/index.html`](docs/index.html)) directly in any modern browser or via VS Code Live Server.
+* **Live Dashboard URL:** [https://fahadrahman444.github.io/AirGuard-IOT/](https://fahadrahman444.github.io/AirGuard-IOT/)
+* **Automated CI/CD Workflow:** [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) automatically deploys the `web/` application on every push to `main`.
+* **Activation in GitHub:** In your repository on GitHub, navigate to **Settings $\rightarrow$ Pages**, and under **Build and deployment $\rightarrow$ Source**, select **GitHub Actions**.
+* **Local Run:** You can also open [`web/index.html`](web/index.html) directly in any modern browser or via VS Code Live Server.
 
 The terminal automatically:
 1. Queries **Supabase** upon loading to backfill the last 30 historical records into the dual oscilloscopes.
