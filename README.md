@@ -174,12 +174,19 @@ For a complete step-by-step wiring guide, ASCII pin connection diagrams, and bre
 6. Set Board to **ESP32S3 Dev Module** and enable **USB CDC On Boot**.
 7. Click **Verify** $\rightarrow$ **Upload**. Open Serial Monitor at **115200 baud**.
 
-### Step 3: Launching the Real-Time Web Dashboard
-1. Open [`web/index.html`](web/index.html) directly in any modern web browser (or serve via VS Code Live Server / GitHub Pages).
-2. The dashboard will:
-   - Query **Supabase** on startup to backfill historical time-series curves.
-   - Connect to **MQTT over WebSockets** to animate live gauge dials every 3 seconds.
-   - Provide instantaneous visual banners and audio tones if hazard limits are breached!
+### Step 3: Launching the Real-Time Web Dashboard (GitHub Pages)
+The web application is engineered as a zero-dependency, production-grade SCADA telemetry terminal that deploys directly onto **GitHub Pages**:
+
+* **Live GitHub Pages URL:** `https://fahadrahman444.github.io/AirGuard-IOT/`
+* **Automated CI/CD Workflow:** [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) automatically compiles and deploys the `web/` application on every push to `main`.
+* **Manual GitHub Pages Setup:** Under repository **Settings $\rightarrow$ Pages**, set **Source** to `GitHub Actions` (or choose `Deploy from a branch` $\rightarrow$ branch `main` $\rightarrow$ folder `/docs`).
+* **Local Run:** You can also open [`web/index.html`](web/index.html) (or [`docs/index.html`](docs/index.html)) directly in any modern browser or via VS Code Live Server.
+
+The terminal automatically:
+1. Queries **Supabase** upon loading to backfill the last 30 historical records into the dual oscilloscopes.
+2. Connects to **HiveMQ MQTT over WSS** (`wss://broker.hivemq.com:8884/mqtt`) to stream sub-100ms real-time updates every 3 seconds.
+3. Provides an acoustic siren and visual safety codes (Normal / Warning / Critical Hazard) conforming to OSHA/ISO safety limits.
+4. Allows exporting recorded telemetry to **CSV** and **JSON** for academic lab reports.
 
 ---
 

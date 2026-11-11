@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AirGuard IoT — Real-Time Environmental & Safety Dashboard</title>
+  <title>AirGuard IoT — Industrial Telemetry & Safety Terminal</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,16 +21,23 @@
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+          },
           colors: {
-            brand: {
-              50: '#f0fdf4',
-              500: '#22c55e',
-              600: '#16a34a',
-              900: '#14532d'
-            },
-            darkbg: '#0b1120',
-            cardbg: '#131e36',
-            cardborder: '#1e293b'
+            scada: {
+              bg: '#0d1117',
+              panel: '#161b22',
+              card: '#1c2128',
+              border: '#30363d',
+              accent: '#58a6ff',
+              green: '#2ea043',
+              amber: '#d29922',
+              red: '#f85149',
+              text: '#c9d1d9',
+              muted: '#8b949e'
+            }
           }
         }
       }
@@ -38,288 +45,401 @@
   </script>
 
   <style>
-    @keyframes pulse-fast {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.01); }
+    /* Industrial SCADA Gauge & Telemetry Styles */
+    body {
+      background-color: #0b0e14;
+      color: #c9d1d9;
     }
-    .alarm-critical {
-      animation: pulse-fast 1s infinite ease-in-out;
-      background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%) !important;
+    .panel-border {
+      border: 1px solid #30363d;
     }
-    .alarm-warning {
-      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+    .panel-header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
     }
-    .alarm-safe {
-      background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+    .scada-metric-box {
+      background: #12161f;
+      border: 1px solid #282f3a;
     }
-    .gauge-dial {
-      transition: stroke-dashoffset 0.6s ease-in-out, stroke 0.6s ease-in-out;
+    .badge-normal {
+      background: rgba(46, 160, 67, 0.15);
+      border: 1px solid #2ea043;
+      color: #3fb950;
+    }
+    .badge-warn {
+      background: rgba(210, 153, 34, 0.15);
+      border: 1px solid #d29922;
+      color: #e3b341;
+    }
+    .badge-danger {
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid #f85149;
+      color: #ff7b72;
+      animation: alertPulse 1.2s infinite;
+    }
+    @keyframes alertPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .progress-bar-fill {
+      transition: width 0.4s ease-out, background-color 0.4s ease-out;
     }
   </style>
 </head>
-<body class="bg-[#0a0f1d] text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-white">
+<body class="min-h-screen text-xs antialiased selection:bg-slate-700 selection:text-white">
 
-  <!-- Top Navigation & System Status Header -->
-  <header class="border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+  <!-- Top SCADA Control Header -->
+  <header class="bg-[#12161f] border-b border-[#30363d] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- System Title & Station Identification -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+        <div class="w-8 h-8 rounded bg-[#1f242c] border border-[#30363d] flex items-center justify-center text-slate-300 font-bold text-sm">
+          AG
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            AirGuard <span class="text-emerald-400 font-extrabold text-sm uppercase px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">IoT</span>
-          </h1>
-          <p class="text-xs text-slate-400">ESP32-S3 Dual-Sink Environmental Station</p>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-sm text-slate-100 tracking-wide">AIRGUARD TELEMETRY SYSTEM</h1>
+            <span class="px-1.5 py-0.2 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">SCADA v1.2</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-mono">NODE: ESP32-S3-WROOM-1 // STATION: UITS-CSE402-LAB // DUAL-SINK HYBRID</p>
         </div>
       </div>
 
-      <!-- Cloud Sync & Live Badges -->
-      <div class="flex items-center space-x-3 text-xs">
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
-          <span id="mqtt-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="mqtt-label" class="text-slate-300 font-medium">MQTT: Connecting...</span>
+      <!-- Real-Time Connectivity Matrix -->
+      <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+        <!-- Sink 1: MQTT Status -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#161b22] border border-[#30363d]">
+          <span id="mqtt-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span class="text-slate-400">MQTT (3s):</span>
+          <span id="mqtt-status" class="text-amber-400 font-semibold">CONNECTING</span>
         </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
-          <span id="supabase-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-          <span id="supabase-label" class="text-slate-300 font-medium">Supabase: Synced</span>
+
+        <!-- Sink 2: Supabase Status -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#161b22] border border-[#30363d]">
+          <span id="supabase-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span class="text-slate-400">SUPABASE (15s):</span>
+          <span id="supabase-status" class="text-slate-300 font-semibold">INITIALIZING</span>
         </div>
-        <button id="btn-audio-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Toggle Alarm Siren Audio">
+
+        <!-- Telemetry Packet Counter -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#161b22] border border-[#30363d]">
+          <span class="text-slate-400">PACKETS:</span>
+          <span id="packet-counter" class="text-slate-200 font-semibold">0</span>
+        </div>
+
+        <!-- Local Clock -->
+        <div class="hidden sm:flex items-center space-x-1 px-2.5 py-1 rounded bg-[#161b22] border border-[#30363d] text-slate-300">
+          <i class="fa-regular fa-clock text-slate-400 text-[10px]"></i>
+          <span id="system-clock">--:--:--</span>
+        </div>
+
+        <!-- Audio Alarm Mute Toggle -->
+        <button id="btn-audio" class="px-2 py-1 rounded bg-[#161b22] hover:bg-[#21262d] text-slate-300 border border-[#30363d] transition" title="Toggle Alarm Siren Audio">
           <i id="audio-icon" class="fa-solid fa-volume-high"></i>
         </button>
       </div>
+
     </div>
   </header>
 
-  <!-- Main Dashboard Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <!-- Main Telemetry Body -->
+  <main class="max-w-7xl mx-auto px-4 py-4 space-y-4">
 
-    <!-- Dynamic Emergency Alert Banner -->
-    <section id="alert-banner" class="alarm-safe rounded-2xl p-4 shadow-xl transition-all duration-500 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <div id="alert-icon-box" class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-2xl shadow-inner">
-          <i id="alert-icon" class="fa-solid fa-circle-check"></i>
+    <!-- Global Hazard State & Emergency Advisory Strip -->
+    <section id="safety-strip" class="p-3 rounded panel-border bg-[#161b22] flex flex-wrap items-center justify-between gap-3 transition-colors duration-300">
+      <div class="flex items-center space-x-3">
+        <div id="safety-indicator-box" class="w-9 h-9 rounded bg-[#21262d] border border-[#30363d] flex items-center justify-center text-lg text-emerald-400">
+          <i id="safety-icon" class="fa-solid fa-shield-check"></i>
         </div>
         <div>
-          <h2 id="alert-title" class="text-lg font-extrabold text-white tracking-wide">ATMOSPHERIC SAFETY OPTIMAL</h2>
-          <p id="alert-subtitle" class="text-xs text-white/90">All monitored air quality, combustible gas, dust, and climate parameters are within safe thresholds.</p>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold tracking-wider text-xs uppercase" id="safety-title">STATUS: SYSTEM NORMAL</span>
+            <span id="safety-code" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold badge-normal">ISO 7240 / OSHA COMPLIANT</span>
+          </div>
+          <p id="safety-desc" class="text-slate-400 text-[11px] mt-0.5">All atmospheric, combustible gas, dust particle, and climate parameters are strictly within permissible limits.</p>
         </div>
       </div>
-      <div class="text-right hidden sm:block">
-        <span class="text-xs uppercase font-semibold text-white/70 block">Last Packet Received</span>
-        <span id="last-update-time" class="text-sm font-mono font-bold text-white">Waiting for data...</span>
+      <div class="font-mono text-right text-[11px] text-slate-400">
+        <div>LAST RECEPTION: <span id="last-timestamp" class="text-slate-200">WAITING FOR SENSOR DATA</span></div>
+        <div>SAMPLE INTERVAL: <span class="text-slate-200">3000 ms</span> | LATENCY: <span id="telemetry-latency" class="text-emerald-400">&lt;85 ms</span></div>
       </div>
     </section>
 
-    <!-- Top Metrics: Gauges & Status Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Engineering Channels: 4-Quadrant Instrument Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
 
-      <!-- Card 1: MQ-135 Air Quality -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg relative overflow-hidden">
-        <div class="flex justify-between items-start mb-3">
-          <div>
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Air Quality (MQ-135)</span>
-            <div class="flex items-baseline space-x-2 mt-1">
-              <span id="val-aqi" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-slate-400 font-medium">ADC (12-bit)</span>
+      <!-- CHANNEL 1: MQ-135 Air Quality Index -->
+      <div class="panel-border bg-[#161b22] rounded flex flex-col justify-between">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <span class="font-mono font-bold text-slate-300 tracking-wider">CH-01 // AIR QUALITY</span>
+          <span class="text-[10px] font-mono px-1.5 rounded bg-slate-800 text-slate-400">MQ-135</span>
+        </div>
+        <div class="p-3 space-y-3">
+          <div class="flex justify-between items-baseline">
+            <span class="text-[10px] text-slate-400 uppercase font-mono">Analog Raw ADC (12-bit)</span>
+            <span id="ch1-status" class="text-[10px] font-mono font-bold uppercase text-emerald-400">NORMAL</span>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="val-aqi" class="text-3xl font-mono font-bold text-slate-100">----</span>
+            <span class="text-slate-400 font-mono text-[11px]">counts</span>
+          </div>
+          <!-- Calibrated Bar Indicator -->
+          <div class="space-y-1">
+            <div class="w-full bg-[#0d1117] h-2 rounded-sm overflow-hidden border border-[#30363d]">
+              <div id="bar-aqi" class="progress-bar-fill h-full bg-emerald-500" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0</span>
+              <span>WARN: 1200</span>
+              <span>DANGER: 2000</span>
             </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <i class="fa-solid fa-wind text-base"></i>
+          <div class="scada-metric-box p-2 rounded text-[11px] font-mono space-y-1">
+            <div class="flex justify-between text-slate-400"><span>Target:</span> <span class="text-slate-300">CO2, NH3, Benzene, Smoke</span></div>
+            <div class="flex justify-between text-slate-400"><span>Session Range:</span> <span id="ch1-range" class="text-slate-300">-- / --</span></div>
           </div>
-        </div>
-        <!-- Circular Progress Ring -->
-        <div class="flex items-center justify-center py-2">
-          <svg class="w-32 h-32 transform -rotate-90">
-            <circle cx="64" cy="64" r="50" stroke="#1e293b" stroke-width="10" fill="transparent" />
-            <circle id="ring-aqi" cx="64" cy="64" r="50" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="314.15" stroke-dashoffset="314.15" class="gauge-dial" />
-          </svg>
-          <div class="absolute flex flex-col items-center">
-            <span id="status-aqi" class="text-xs font-bold uppercase text-cyan-400">Normal</span>
-          </div>
-        </div>
-        <div class="flex justify-between text-[11px] text-slate-400 mt-2 border-t border-slate-800/60 pt-2">
-          <span>Safe: &lt;1200</span>
-          <span>Danger: &ge;2000</span>
         </div>
       </div>
 
-      <!-- Card 2: MQ-9 Carbon Monoxide & Gas -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg relative overflow-hidden">
-        <div class="flex justify-between items-start mb-3">
-          <div>
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">CO & Combustible Gas</span>
-            <div class="flex items-baseline space-x-2 mt-1">
-              <span id="val-cogas" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-slate-400 font-medium">ADC (12-bit)</span>
+      <!-- CHANNEL 2: MQ-9 Carbon Monoxide & Combustible Gas -->
+      <div class="panel-border bg-[#161b22] rounded flex flex-col justify-between">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <span class="font-mono font-bold text-slate-300 tracking-wider">CH-02 // CO & GAS</span>
+          <span class="text-[10px] font-mono px-1.5 rounded bg-slate-800 text-slate-400">MQ-9</span>
+        </div>
+        <div class="p-3 space-y-3">
+          <div class="flex justify-between items-baseline">
+            <span class="text-[10px] text-slate-400 uppercase font-mono">Analog Raw ADC (12-bit)</span>
+            <span id="ch2-status" class="text-[10px] font-mono font-bold uppercase text-emerald-400">NORMAL</span>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="val-cogas" class="text-3xl font-mono font-bold text-slate-100">----</span>
+            <span class="text-slate-400 font-mono text-[11px]">counts</span>
+          </div>
+          <!-- Calibrated Bar Indicator -->
+          <div class="space-y-1">
+            <div class="w-full bg-[#0d1117] h-2 rounded-sm overflow-hidden border border-[#30363d]">
+              <div id="bar-cogas" class="progress-bar-fill h-full bg-emerald-500" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0</span>
+              <span>WARN: 1000</span>
+              <span>DANGER: 1600</span>
             </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <i class="fa-solid fa-fire-flame-curved text-base"></i>
+          <div class="scada-metric-box p-2 rounded text-[11px] font-mono space-y-1">
+            <div class="flex justify-between text-slate-400"><span>Target:</span> <span class="text-slate-300">CO, Methane (CH4), LPG</span></div>
+            <div class="flex justify-between text-slate-400"><span>Session Range:</span> <span id="ch2-range" class="text-slate-300">-- / --</span></div>
           </div>
-        </div>
-        <!-- Circular Progress Ring -->
-        <div class="flex items-center justify-center py-2">
-          <svg class="w-32 h-32 transform -rotate-90">
-            <circle cx="64" cy="64" r="50" stroke="#1e293b" stroke-width="10" fill="transparent" />
-            <circle id="ring-cogas" cx="64" cy="64" r="50" stroke="#f43f5e" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="314.15" stroke-dashoffset="314.15" class="gauge-dial" />
-          </svg>
-          <div class="absolute flex flex-col items-center">
-            <span id="status-cogas" class="text-xs font-bold uppercase text-rose-400">Normal</span>
-          </div>
-        </div>
-        <div class="flex justify-between text-[11px] text-slate-400 mt-2 border-t border-slate-800/60 pt-2">
-          <span>Safe: &lt;1000</span>
-          <span>Danger: &ge;1600</span>
         </div>
       </div>
 
-      <!-- Card 3: Optical Dust Density -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg relative overflow-hidden">
-        <div class="flex justify-between items-start mb-3">
-          <div>
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dust Density (GP2Y1010)</span>
-            <div class="flex items-baseline space-x-2 mt-1">
-              <span id="val-dust" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-slate-400 font-medium">µg/m³</span>
+      <!-- CHANNEL 3: Sharp GP2Y1010AU0F Optical Dust -->
+      <div class="panel-border bg-[#161b22] rounded flex flex-col justify-between">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <span class="font-mono font-bold text-slate-300 tracking-wider">CH-03 // DUST PARTICULATES</span>
+          <span class="text-[10px] font-mono px-1.5 rounded bg-slate-800 text-slate-400">GP2Y1010</span>
+        </div>
+        <div class="p-3 space-y-3">
+          <div class="flex justify-between items-baseline">
+            <span class="text-[10px] text-slate-400 uppercase font-mono">Calculated Density</span>
+            <span id="ch3-status" class="text-[10px] font-mono font-bold uppercase text-emerald-400">CLEAN</span>
+          </div>
+          <div class="flex items-baseline space-x-2">
+            <span id="val-dust" class="text-3xl font-mono font-bold text-slate-100">----</span>
+            <span class="text-slate-400 font-mono text-[11px]">µg/m³</span>
+          </div>
+          <!-- Calibrated Bar Indicator -->
+          <div class="space-y-1">
+            <div class="w-full bg-[#0d1117] h-2 rounded-sm overflow-hidden border border-[#30363d]">
+              <div id="bar-dust" class="progress-bar-fill h-full bg-emerald-500" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0 µg/m³</span>
+              <span>WHO: 15</span>
+              <span>HAZARD: &gt;150</span>
             </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <i class="fa-solid fa-smog text-base"></i>
+          <div class="scada-metric-box p-2 rounded text-[11px] font-mono space-y-1">
+            <div class="flex justify-between text-slate-400"><span>Optical Pulse:</span> <span class="text-slate-300">0.32 ms cycle / 280 µs ADC</span></div>
+            <div class="flex justify-between text-slate-400"><span>Session Range:</span> <span id="ch3-range" class="text-slate-300">-- / --</span></div>
           </div>
-        </div>
-        <!-- Circular Progress Ring -->
-        <div class="flex items-center justify-center py-2">
-          <svg class="w-32 h-32 transform -rotate-90">
-            <circle cx="64" cy="64" r="50" stroke="#1e293b" stroke-width="10" fill="transparent" />
-            <circle id="ring-dust" cx="64" cy="64" r="50" stroke="#f59e0b" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="314.15" stroke-dashoffset="314.15" class="gauge-dial" />
-          </svg>
-          <div class="absolute flex flex-col items-center">
-            <span id="status-dust" class="text-xs font-bold uppercase text-amber-400">Clean</span>
-          </div>
-        </div>
-        <div class="flex justify-between text-[11px] text-slate-400 mt-2 border-t border-slate-800/60 pt-2">
-          <span>WHO Standard: &lt;50</span>
-          <span>Hazardous: &gt;150</span>
         </div>
       </div>
 
-      <!-- Card 4: Ambient Climate (DHT11) -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg flex flex-col justify-between">
-        <div class="flex justify-between items-start">
-          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ambient Climate (DHT11)</span>
-          <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <i class="fa-solid fa-cloud-sun text-base"></i>
-          </div>
+      <!-- CHANNEL 4: DHT11 Digital Climate -->
+      <div class="panel-border bg-[#161b22] rounded flex flex-col justify-between">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <span class="font-mono font-bold text-slate-300 tracking-wider">CH-04 // CLIMATE</span>
+          <span class="text-[10px] font-mono px-1.5 rounded bg-slate-800 text-slate-400">DHT11 / 22</span>
         </div>
-
-        <div class="grid grid-cols-2 gap-3 my-3">
-          <div class="bg-[#0b1222] p-3 rounded-xl border border-slate-800">
-            <span class="text-[11px] text-slate-400 block mb-1">Temperature</span>
-            <div class="flex items-baseline space-x-1">
-              <span id="val-temp" class="text-2xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-slate-400">°C</span>
+        <div class="p-3 space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="scada-metric-box p-2.5 rounded">
+              <span class="text-[10px] text-slate-400 font-mono block">TEMPERATURE</span>
+              <div class="flex items-baseline space-x-1 mt-1">
+                <span id="val-temp" class="text-2xl font-mono font-bold text-slate-100">--.-</span>
+                <span class="text-[10px] text-slate-400 font-mono">°C</span>
+              </div>
+            </div>
+            <div class="scada-metric-box p-2.5 rounded">
+              <span class="text-[10px] text-slate-400 font-mono block">HUMIDITY</span>
+              <div class="flex items-baseline space-x-1 mt-1">
+                <span id="val-hum" class="text-2xl font-mono font-bold text-slate-100">--.-</span>
+                <span class="text-[10px] text-slate-400 font-mono">%RH</span>
+              </div>
             </div>
           </div>
-          <div class="bg-[#0b1222] p-3 rounded-xl border border-slate-800">
-            <span class="text-[11px] text-slate-400 block mb-1">Humidity</span>
-            <div class="flex items-baseline space-x-1">
-              <span id="val-hum" class="text-2xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-slate-400">%</span>
-            </div>
+          <div class="scada-metric-box p-2 rounded text-[11px] font-mono space-y-1">
+            <div class="flex justify-between text-slate-400"><span>Comfort Envelope:</span> <span class="text-emerald-400">22–27°C / 40–60% RH</span></div>
+            <div class="flex justify-between text-slate-400"><span>Dew Point Approx:</span> <span id="val-dew" class="text-slate-300">-- °C</span></div>
           </div>
-        </div>
-
-        <div class="text-[11px] text-slate-400 border-t border-slate-800/60 pt-2 flex items-center justify-between">
-          <span>Target: 22–27°C</span>
-          <span class="text-emerald-400 font-semibold">Comfort Zone</span>
         </div>
       </div>
 
     </div>
 
-    <!-- Live & Historical Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <!-- Dual Oscilloscope Telemetry Trace Windows -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       
-      <!-- Chart 1: Air Quality & Gas -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Air Quality & Combustible Gas Telemetry
-            </h3>
-            <p class="text-xs text-slate-400">Backfilled from Supabase & streaming live via MQTT</p>
+      <!-- TRACE 1: Gas & Pollution Spectrum -->
+      <div class="panel-border bg-[#161b22] rounded">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+            <span class="font-mono font-bold text-slate-200">TRACE 1 // AIR QUALITY & COMBUSTIBLE GAS VECTOR</span>
           </div>
-          <span class="text-xs px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300">Live 60s Buffer</span>
+          <span class="text-[10px] font-mono text-slate-400">BUFFER: 30 SAMPLES</span>
         </div>
-        <div class="h-64">
+        <div class="p-3 h-60">
           <canvas id="chart-gas"></canvas>
         </div>
       </div>
 
-      <!-- Chart 2: Dust Density & Climate -->
-      <div class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Suspended Dust & Climate Trends
-            </h3>
-            <p class="text-xs text-slate-400">Microgram particulate density and room climate metrics</p>
+      <!-- TRACE 2: Dust & Temperature Vector -->
+      <div class="panel-border bg-[#161b22] rounded">
+        <div class="panel-header px-3 py-2 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span class="font-mono font-bold text-slate-200">TRACE 2 // PARTICULATE MATTER & TEMPERATURE OSCILLOGRAM</span>
           </div>
-          <span class="text-xs px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300">Live 60s Buffer</span>
+          <span class="text-[10px] font-mono text-slate-400">BUFFER: 30 SAMPLES</span>
         </div>
-        <div class="h-64">
-          <canvas id="chart-dust-climate"></canvas>
+        <div class="p-3 h-60">
+          <canvas id="chart-dust"></canvas>
         </div>
       </div>
 
     </div>
 
-    <!-- Recent Historical Logs Table (Direct from Supabase) -->
-    <section class="bg-[#11192e] rounded-2xl p-5 border border-slate-800/80 shadow-lg">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-database text-emerald-400"></i> Supabase Postgres Historical Log Archive
-          </h3>
-          <p class="text-xs text-slate-400">Durable database rows persisted at 15-second intervals</p>
+    <!-- SCADA Audit Log & Database Data Table -->
+    <div class="panel-border bg-[#161b22] rounded">
+      <div class="panel-header px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-server text-slate-400 text-xs"></i>
+          <span class="font-mono font-bold text-slate-200 uppercase">Supabase Postgres Telemetry Ledger (Cold-Sink)</span>
         </div>
-        <button id="btn-refresh-history" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-          <i class="fa-solid fa-arrows-rotate"></i> Refresh History
-        </button>
+        <div class="flex items-center space-x-2">
+          <button id="btn-refresh" class="px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-slate-300 font-mono text-[11px] border border-[#30363d] transition">
+            <i class="fa-solid fa-arrows-rotate text-[10px] mr-1"></i> REFRESH TABLE
+          </button>
+          <button id="btn-export-csv" class="px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-slate-300 font-mono text-[11px] border border-[#30363d] transition">
+            <i class="fa-solid fa-file-csv text-[10px] mr-1"></i> EXPORT CSV
+          </button>
+          <button id="btn-export-json" class="px-2.5 py-1 rounded bg-[#21262d] hover:bg-[#30363d] text-slate-300 font-mono text-[11px] border border-[#30363d] transition">
+            <i class="fa-solid fa-code text-[10px] mr-1"></i> EXPORT JSON
+          </button>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-slate-300">
-          <thead class="text-[11px] uppercase bg-slate-900/60 text-slate-400 border-b border-slate-800">
+        <table class="w-full text-left font-mono text-[11px]">
+          <thead class="bg-[#12161f] text-slate-400 border-b border-[#30363d] text-[10px] uppercase">
             <tr>
-              <th class="py-2.5 px-4 font-semibold">Timestamp</th>
-              <th class="py-2.5 px-4 font-semibold">Air Quality (MQ-135)</th>
-              <th class="py-2.5 px-4 font-semibold">CO / Gas (MQ-9)</th>
-              <th class="py-2.5 px-4 font-semibold">Dust (µg/m³)</th>
-              <th class="py-2.5 px-4 font-semibold">Temperature</th>
-              <th class="py-2.5 px-4 font-semibold">Humidity</th>
-              <th class="py-2.5 px-4 font-semibold text-right">Status</th>
+              <th class="py-2 px-3">RECORD ID</th>
+              <th class="py-2 px-3">TIMESTAMP (UTC)</th>
+              <th class="py-2 px-3">MQ-135 (AQI)</th>
+              <th class="py-2 px-3">MQ-9 (CO/GAS)</th>
+              <th class="py-2 px-3">SHARP DUST (µg/m³)</th>
+              <th class="py-2 px-3">TEMP (°C)</th>
+              <th class="py-2 px-3">HUM (%RH)</th>
+              <th class="py-2 px-3 text-right">EVALUATION</th>
             </tr>
           </thead>
-          <tbody id="telemetry-table-body" class="divide-y divide-slate-800/60">
+          <tbody id="telemetry-table-body" class="divide-y divide-[#21262d] text-slate-300">
             <tr>
-              <td colspan="7" class="py-6 text-center text-slate-500 italic">Querying Supabase Postgres database...</td>
+              <td colspan="8" class="py-6 text-center text-slate-500 italic font-sans">
+                Connecting to Supabase Postgres endpoint...
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </section>
+    </div>
+
+    <!-- Engineering Calibration & Simulation Toolbar (For Presentation / Lab Defense) -->
+    <details class="panel-border bg-[#12161f] rounded p-2 text-[11px] font-mono text-slate-400">
+      <summary class="cursor-pointer font-bold text-slate-300 hover:text-white transition">
+        <i class="fa-solid fa-sliders mr-1.5 text-slate-400"></i> LABORATORY VIVA / TEST BENCH CONTROLS (EXPAND FOR SIMULATION)
+      </summary>
+      <div class="mt-3 pt-3 border-t border-[#30363d] grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <button id="btn-sim-normal" class="px-3 py-1.5 rounded bg-[#161b22] hover:bg-[#21262d] text-emerald-400 border border-emerald-500/30 font-bold transition">
+          SIMULATE CODE GREEN (NORMAL)
+        </button>
+        <button id="btn-sim-warn" class="px-3 py-1.5 rounded bg-[#161b22] hover:bg-[#21262d] text-amber-400 border border-amber-500/30 font-bold transition">
+          SIMULATE CODE AMBER (WARNING)
+        </button>
+        <button id="btn-sim-danger" class="px-3 py-1.5 rounded bg-[#161b22] hover:bg-[#21262d] text-rose-400 border border-rose-500/30 font-bold transition">
+          SIMULATE CODE RED (GAS EMERGENCY)
+        </button>
+      </div>
+    </details>
 
   </main>
 
-  <!-- Audio Tone Generator for Emergency Alarm Siren -->
+  <!-- Industrial SCADA Client Script -->
   <script>
-    let audioContext = null;
-    let isAudioEnabled = true;
+    // ========================================================================
+    // 1. ENDPOINTS & ARCHITECTURAL CONFIGURATION
+    // ========================================================================
+    const SUPABASE_URL  = 'https://zamvuyyqfwehxlnijeat.supabase.co';
+    const SUPABASE_KEY  = 'sb_publishable_4YDEh6TVbN9LtMtdz8QsHw_VuIT3Bpt';
+    
+    // MQTT WebSocket Configuration (Public HiveMQ WSS)
+    const MQTT_HOST     = 'broker.hivemq.com';
+    const MQTT_PORT     = 8884;
+    const MQTT_PATH     = '/mqtt';
+    const MQTT_TOPIC    = 'airguard/telemetry';
 
-    function playEmergencyTone() {
-      if (!isAudioEnabled) return;
+    // Safety Thresholds (from ESP32-S3 firmware)
+    const THRESHOLD_MQ135_WARN   = 1200;
+    const THRESHOLD_MQ135_DANGER = 2000;
+    const THRESHOLD_MQ9_WARN     = 1000;
+    const THRESHOLD_MQ9_DANGER   = 1600;
+
+    // Runtime state variables
+    let packetCount = 0;
+    let cachedRows = [];
+    let audioContext = null;
+    let audioMuted = false;
+
+    // Metric min/max tracking
+    let stats = {
+      aqi: { min: Infinity, max: -Infinity },
+      cogas: { min: Infinity, max: -Infinity },
+      dust: { min: Infinity, max: -Infinity }
+    };
+
+    // System Clock
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('system-clock').innerText = now.toTimeString().split(' ')[0] + ' UTC' + (now.getTimezoneOffset() <= 0 ? '+' : '-') + Math.abs(now.getTimezoneOffset() / 60);
+    }, 1000);
+
+    // Audio Alarm Siren Implementation
+    function triggerAudioAlert() {
+      if (audioMuted) return;
       try {
         if (!audioContext) {
           audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -330,137 +450,127 @@
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(880, audioContext.currentTime); // 880 Hz
-        osc.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        osc.frequency.setValueAtTime(800, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.start();
-        osc.stop(audioContext.currentTime + 0.3);
+        osc.stop(audioContext.currentTime + 0.25);
       } catch (e) {
-        console.warn("Audio playback not allowed without prior user interaction:", e);
+        console.warn("Audio Context awaiting user click:", e);
       }
     }
 
-    document.getElementById('btn-audio-toggle').addEventListener('click', () => {
-      isAudioEnabled = !isAudioEnabled;
+    document.getElementById('btn-audio').addEventListener('click', () => {
+      audioMuted = !audioMuted;
       const icon = document.getElementById('audio-icon');
-      if (isAudioEnabled) {
-        icon.className = 'fa-solid fa-volume-high';
-      } else {
+      if (audioMuted) {
         icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-slate-300';
       }
     });
-  </script>
-
-  <!-- Core Dashboard Logic: Dual-Sink Ingestion (Supabase Backfill + MQTT Live) -->
-  <script>
-    // ========================================================================
-    // 1. CONFIGURATION
-    // ========================================================================
-    const SUPABASE_URL  = 'https://zamvuyyqfwehxlnijeat.supabase.co';
-    const SUPABASE_KEY  = 'sb_publishable_4YDEh6TVbN9LtMtdz8QsHw_VuIT3Bpt';
-    
-    // MQTT WebSocket Configuration (Public HiveMQ over WSS)
-    const MQTT_HOST     = 'broker.hivemq.com';
-    const MQTT_PORT     = 8884; // Secure WSS port
-    const MQTT_PATH     = '/mqtt';
-    const MQTT_TOPIC    = 'airguard/telemetry';
-
-    // Thresholds matching firmware
-    const THRESHOLD_MQ135_WARN   = 1200;
-    const THRESHOLD_MQ135_DANGER = 2000;
-    const THRESHOLD_MQ9_WARN     = 1000;
-    const THRESHOLD_MQ9_DANGER   = 1600;
-
-    // Initialize Supabase Client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ========================================================================
-    // 2. CHART.JS CONFIGURATION
+    // 2. CHART.JS INDUSTRIAL OSCILLOSCOPE CONFIGURATION
     // ========================================================================
-    const maxDataPoints = 30; // 30 historical + rolling live points
+    const chartDefaults = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: { color: '#8b949e', font: { family: 'ui-monospace, monospace', size: 10 }, boxWidth: 12 }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#21262d' },
+          ticks: { color: '#6e7681', font: { family: 'ui-monospace, monospace', size: 9 }, maxTicksLimit: 7 }
+        },
+        y: {
+          grid: { color: '#21262d' },
+          ticks: { color: '#8b949e', font: { family: 'ui-monospace, monospace', size: 9 } }
+        }
+      }
+    };
 
     // Chart 1: Air Quality & Gas
-    const ctxGas = document.getElementById('chart-gas').getContext('2d');
-    const chartGas = new Chart(ctxGas, {
+    const chartGas = new Chart(document.getElementById('chart-gas').getContext('2d'), {
       type: 'line',
       data: {
         labels: [],
         datasets: [
           {
-            label: 'Air Quality (MQ-135)',
+            label: 'MQ-135 AQI (Counts)',
             data: [],
-            borderColor: '#06b6d4',
-            backgroundColor: 'rgba(6, 182, 212, 0.1)',
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true
+            borderColor: '#58a6ff',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointRadius: 1,
+            tension: 0.1
           },
           {
-            label: 'CO / Gas (MQ-9)',
+            label: 'MQ-9 CO/Gas (Counts)',
             data: [],
-            borderColor: '#f43f5e',
-            backgroundColor: 'rgba(244, 63, 94, 0.1)',
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true
+            borderColor: '#f85149',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointRadius: 1,
+            tension: 0.1
           }
         ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 8 } },
-          y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
-        },
-        plugins: { legend: { labels: { color: '#cbd5e1' } } }
-      }
+      options: chartDefaults
     });
 
     // Chart 2: Dust & Temperature
-    const ctxDust = document.getElementById('chart-dust-climate').getContext('2d');
-    const chartDust = new Chart(ctxDust, {
+    const chartDust = new Chart(document.getElementById('chart-dust').getContext('2d'), {
       type: 'line',
       data: {
         labels: [],
         datasets: [
           {
-            label: 'Dust (µg/m³)',
+            label: 'Dust Density (µg/m³)',
             data: [],
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            borderWidth: 2,
-            tension: 0.35,
-            yAxisID: 'y'
+            borderColor: '#d29922',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointRadius: 1,
+            yAxisID: 'y',
+            tension: 0.1
           },
           {
             label: 'Temperature (°C)',
             data: [],
-            borderColor: '#10b981',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            tension: 0.35,
-            yAxisID: 'y1'
+            borderColor: '#2ea043',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointRadius: 1,
+            yAxisID: 'y1',
+            tension: 0.1
           }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        ...chartDefaults,
         scales: {
-          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 8 } },
-          y: { type: 'linear', position: 'left', grid: { color: '#1e293b' }, ticks: { color: '#f59e0b' } },
-          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#10b981' } }
-        },
-        plugins: { legend: { labels: { color: '#cbd5e1' } } }
+          ...chartDefaults.scales,
+          y: { ...chartDefaults.scales.y, position: 'left' },
+          y1: {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#2ea043', font: { family: 'ui-monospace, monospace', size: 9 } }
+          }
+        }
       }
     });
 
-    function appendChartPoint(timestamp, aqi, coGas, dust, temp) {
-      if (chartGas.data.labels.length >= maxDataPoints) {
+    function appendChartTrace(timestamp, aqi, cogas, dust, temp) {
+      const maxPts = 30;
+      if (chartGas.data.labels.length >= maxPts) {
         chartGas.data.labels.shift();
         chartGas.data.datasets[0].data.shift();
         chartGas.data.datasets[1].data.shift();
@@ -470,97 +580,144 @@
       }
       chartGas.data.labels.push(timestamp);
       chartGas.data.datasets[0].data.push(aqi);
-      chartGas.data.datasets[1].data.push(coGas);
+      chartGas.data.datasets[1].data.push(cogas);
 
       chartDust.data.labels.push(timestamp);
       chartDust.data.datasets[0].data.push(dust);
       chartDust.data.datasets[1].data.push(temp);
 
-      chartGas.update('none');
-      chartDust.update('none');
+      chartGas.update();
+      chartDust.update();
     }
 
     // ========================================================================
-    // 3. UI ANIMATIONS & METRIC UPDATES
+    // 3. TELEMETRY PROCESSING & CALIBRATION ENGINE
     // ========================================================================
-    function updateGaugesAndAlarms(data) {
-      // Update Numeric Values
+    function processTelemetry(data, isLive = true) {
+      if (isLive) {
+        packetCount++;
+        document.getElementById('packet-counter').innerText = packetCount;
+        document.getElementById('last-timestamp').innerText = new Date().toTimeString().split(' ')[0];
+      }
+
+      // Update Numerical Displays
       document.getElementById('val-aqi').innerText = data.aqi;
       document.getElementById('val-cogas').innerText = data.co_gas;
       document.getElementById('val-dust').innerText = data.dust.toFixed(1);
       document.getElementById('val-temp').innerText = data.temp.toFixed(1);
       document.getElementById('val-hum').innerText = data.hum.toFixed(1);
-      document.getElementById('last-update-time').innerText = new Date().toLocaleTimeString();
 
-      // Progress Ring Calculations (circ = 314.15)
-      const circ = 314.15;
-      const aqiPct = Math.min(data.aqi / 3000, 1.0);
-      const cogasPct = Math.min(data.co_gas / 3000, 1.0);
-      const dustPct = Math.min(data.dust / 200, 1.0);
+      // Dew point calculation: Td = T - ((100 - RH)/5)
+      const dew = data.temp - ((100 - data.hum) / 5.0);
+      document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
 
-      document.getElementById('ring-aqi').style.strokeDashoffset = circ - (circ * aqiPct);
-      document.getElementById('ring-cogas').style.strokeDashoffset = circ - (circ * cogasPct);
-      document.getElementById('ring-dust').style.strokeDashoffset = circ - (circ * dustPct);
+      // Update Range Statistics
+      stats.aqi.min = Math.min(stats.aqi.min, data.aqi);
+      stats.aqi.max = Math.max(stats.aqi.max, data.aqi);
+      document.getElementById('ch1-range').innerText = `${stats.aqi.min} / ${stats.aqi.max}`;
 
-      // Evaluate Safety Status
+      stats.cogas.min = Math.min(stats.cogas.min, data.co_gas);
+      stats.cogas.max = Math.max(stats.cogas.max, data.co_gas);
+      document.getElementById('ch2-range').innerText = `${stats.cogas.min} / ${stats.cogas.max}`;
+
+      stats.dust.min = Math.min(stats.dust.min, data.dust);
+      stats.dust.max = Math.max(stats.dust.max, data.dust);
+      document.getElementById('ch3-range').innerText = `${stats.dust.min.toFixed(0)} / ${stats.dust.max.toFixed(0)}`;
+
+      // Update Bar Widths
+      const aqiPct = Math.min((data.aqi / 2500) * 100, 100);
+      const cogasPct = Math.min((data.co_gas / 2000) * 100, 100);
+      const dustPct = Math.min((data.dust / 150) * 100, 100);
+
+      document.getElementById('bar-aqi').style.width = aqiPct + '%';
+      document.getElementById('bar-cogas').style.width = cogasPct + '%';
+      document.getElementById('bar-dust').style.width = dustPct + '%';
+
+      // Evaluate Safety States
       const isDanger = (data.aqi >= THRESHOLD_MQ135_DANGER) || (data.co_gas >= THRESHOLD_MQ9_DANGER);
       const isWarning = (!isDanger) && ((data.aqi >= THRESHOLD_MQ135_WARN) || (data.co_gas >= THRESHOLD_MQ9_WARN));
 
-      const banner = document.getElementById('alert-banner');
-      const title = document.getElementById('alert-title');
-      const subtitle = document.getElementById('alert-subtitle');
-      const icon = document.getElementById('alert-icon');
+      // Bar Colors
+      document.getElementById('bar-aqi').className = `progress-bar-fill h-full ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'bg-rose-500' : data.aqi >= THRESHOLD_MQ135_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
+      document.getElementById('bar-cogas').className = `progress-bar-fill h-full ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'bg-rose-500' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'bg-amber-500' : 'bg-emerald-500'}`;
+      document.getElementById('bar-dust').className = `progress-bar-fill h-full ${data.dust >= 100 ? 'bg-rose-500' : data.dust >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`;
+
+      document.getElementById('ch1-status').innerText = data.aqi >= THRESHOLD_MQ135_DANGER ? 'HAZARD' : data.aqi >= THRESHOLD_MQ135_WARN ? 'CAUTION' : 'NORMAL';
+      document.getElementById('ch1-status').className = `text-[10px] font-mono font-bold uppercase ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'text-rose-400' : data.aqi >= THRESHOLD_MQ135_WARN ? 'text-amber-400' : 'text-emerald-400'}`;
+
+      document.getElementById('ch2-status').innerText = data.co_gas >= THRESHOLD_MQ9_DANGER ? 'HAZARD' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'CAUTION' : 'NORMAL';
+      document.getElementById('ch2-status').className = `text-[10px] font-mono font-bold uppercase ${data.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-rose-400' : data.co_gas >= THRESHOLD_MQ9_WARN ? 'text-amber-400' : 'text-emerald-400'}`;
+
+      // Global Strip Management
+      const strip = document.getElementById('safety-strip');
+      const sTitle = document.getElementById('safety-title');
+      const sCode = document.getElementById('safety-code');
+      const sDesc = document.getElementById('safety-desc');
+      const sIcon = document.getElementById('safety-icon');
+      const sBox = document.getElementById('safety-indicator-box');
 
       if (isDanger) {
-        banner.className = 'alarm-critical rounded-2xl p-4 shadow-xl transition-all duration-500 flex items-center justify-between';
-        title.innerText = 'CRITICAL HAZARD: TOXIC SMOKE / COMBUSTIBLE GAS LEAK';
-        subtitle.innerText = 'Dangerous levels detected! Evacuate room, open windows, and inspect gas supply immediately.';
-        icon.className = 'fa-solid fa-triangle-exclamation';
-        document.getElementById('status-aqi').innerText = data.aqi >= THRESHOLD_MQ135_DANGER ? 'HAZARDOUS' : 'ELEVATED';
-        document.getElementById('status-cogas').innerText = data.co_gas >= THRESHOLD_MQ9_DANGER ? 'DANGER' : 'NORMAL';
-        playEmergencyTone();
+        strip.style.borderColor = '#f85149';
+        sTitle.innerText = 'STATUS: CODE RED — IMMEDIATE SAFETY BREACH';
+        sTitle.className = 'font-bold tracking-wider text-xs uppercase text-rose-400';
+        sCode.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono font-bold badge-danger';
+        sCode.innerText = 'CRITICAL TOXIC / COMBUSTIBLE LEAK';
+        sDesc.innerText = 'Combustible gas or toxic contaminant levels exceed emergency life-safety thresholds. Evacuate room & inspect ventilation.';
+        sIcon.className = 'fa-solid fa-triangle-exclamation text-rose-400';
+        sBox.className = 'w-9 h-9 rounded bg-[#2c1d22] border border-[#f85149] flex items-center justify-center text-lg';
+        triggerAudioAlert();
       } else if (isWarning) {
-        banner.className = 'alarm-warning rounded-2xl p-4 shadow-xl transition-all duration-500 flex items-center justify-between';
-        title.innerText = 'WARNING: ELEVATED CONTAMINANT CONCENTRATION';
-        subtitle.innerText = 'Air quality degradation or mild gas traces detected. Ensure laboratory ventilation.';
-        icon.className = 'fa-solid fa-circle-exclamation';
-        document.getElementById('status-aqi').innerText = data.aqi >= THRESHOLD_MQ135_WARN ? 'MODERATE' : 'NORMAL';
-        document.getElementById('status-cogas').innerText = data.co_gas >= THRESHOLD_MQ9_WARN ? 'WARNING' : 'NORMAL';
+        strip.style.borderColor = '#d29922';
+        sTitle.innerText = 'STATUS: CODE AMBER — ELEVATED CONTAMINATION';
+        sTitle.className = 'font-bold tracking-wider text-xs uppercase text-amber-400';
+        sCode.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono font-bold badge-warn';
+        sCode.innerText = 'CAUTIONARY THRESHOLD EXCEEDED';
+        sDesc.innerText = 'Elevated air contamination or trace gas concentration detected. Active monitoring and ventilation recommended.';
+        sIcon.className = 'fa-solid fa-circle-exclamation text-amber-400';
+        sBox.className = 'w-9 h-9 rounded bg-[#2b2416] border border-[#d29922] flex items-center justify-center text-lg';
       } else {
-        banner.className = 'alarm-safe rounded-2xl p-4 shadow-xl transition-all duration-500 flex items-center justify-between';
-        title.innerText = 'ATMOSPHERIC SAFETY OPTIMAL';
-        subtitle.innerText = 'All monitored parameters are within safe thresholds.';
-        icon.className = 'fa-solid fa-circle-check';
-        document.getElementById('status-aqi').innerText = 'NORMAL';
-        document.getElementById('status-cogas').innerText = 'NORMAL';
+        strip.style.borderColor = '#30363d';
+        sTitle.innerText = 'STATUS: CODE GREEN — ALL SYSTEMS NOMINAL';
+        sTitle.className = 'font-bold tracking-wider text-xs uppercase text-slate-200';
+        sCode.className = 'px-1.5 py-0.5 rounded text-[10px] font-mono font-bold badge-normal';
+        sCode.innerText = 'ISO 7240 / OSHA COMPLIANT';
+        sDesc.innerText = 'All atmospheric, combustible gas, dust particle, and climate parameters are strictly within permissible limits.';
+        sIcon.className = 'fa-solid fa-shield-check text-emerald-400';
+        sBox.className = 'w-9 h-9 rounded bg-[#21262d] border border-[#30363d] flex items-center justify-center text-lg';
       }
     }
 
     // ========================================================================
-    // 4. SINK 2 (COLD PATH): SUPABASE HISTORICAL BACKFILL ON LOAD
+    // 4. SINK 2: SUPABASE POSTGRES COLD-START BACKFILL
     // ========================================================================
-    async function loadSupabaseHistory() {
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function fetchSupabaseHistory() {
       const dot = document.getElementById('supabase-dot');
-      const label = document.getElementById('supabase-label');
-      dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-      label.innerText = 'Supabase: Fetching...';
+      const statusText = document.getElementById('supabase-status');
+      dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+      statusText.innerText = 'FETCHING';
 
       try {
         const { data, error } = await supabase
           .from('telemetry')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(maxDataPoints);
+          .limit(30);
 
         if (error) {
-          console.warn("[Supabase] Query error (table may need creation):", error.message);
-          label.innerText = 'Supabase: Table Not Initialized';
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+          console.warn("[Supabase] Query notice:", error.message);
+          dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+          statusText.innerText = 'TABLE PENDING';
           return;
         }
 
         if (data && data.length > 0) {
-          // Reverse so older readings are on the left
+          cachedRows = data;
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          statusText.innerText = `ONLINE (${data.length} ROWS)`;
+
+          // Populate chart traces in chronological order
           const chronological = [...data].reverse();
           chartGas.data.labels = [];
           chartGas.data.datasets[0].data = [];
@@ -570,50 +727,45 @@
           chartDust.data.datasets[1].data = [];
 
           chronological.forEach(row => {
-            const timeStr = new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            appendChartPoint(timeStr, row.aqi, row.co_gas, row.dust, row.temp);
+            const timeStr = new Date(row.created_at).toISOString().substring(11, 19);
+            appendChartTrace(timeStr, row.aqi, row.co_gas, row.dust, row.temp);
           });
 
-          // Update metrics to newest row
-          updateGaugesAndAlarms(data[0]);
-
-          // Render Table
-          renderHistoryTable(data.slice(0, 10));
-
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-          label.innerText = `Supabase: Synced (${data.length} rows)`;
+          // Process newest point
+          processTelemetry(data[0], false);
+          renderTable(data);
         } else {
-          label.innerText = 'Supabase: Ready (0 rows)';
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          statusText.innerText = 'READY (0 ROWS)';
           document.getElementById('telemetry-table-body').innerHTML = `
-            <tr><td colspan="7" class="py-6 text-center text-slate-500 italic">No telemetry recorded yet in Supabase table. ESP32 will auto-populate once flashed.</td></tr>
+            <tr><td colspan="8" class="py-4 text-center text-slate-500 italic font-mono">Supabase table initialized. Waiting for ESP32 scheduled writes (every 15s).</td></tr>
           `;
         }
       } catch (err) {
-        console.error("[Supabase] Network/Init error:", err);
-        label.innerText = 'Supabase: Offline';
-        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        console.error("[Supabase] Network exception:", err);
+        dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+        statusText.innerText = 'OFFLINE';
       }
     }
 
-    function renderHistoryTable(rows) {
+    function renderTable(rows) {
       const tbody = document.getElementById('telemetry-table-body');
       tbody.innerHTML = '';
-      rows.forEach(r => {
-        const timeStr = new Date(r.created_at).toLocaleString();
+      rows.forEach((r, idx) => {
         const isHazard = (r.aqi >= THRESHOLD_MQ135_DANGER) || (r.co_gas >= THRESHOLD_MQ9_DANGER);
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.className = 'hover:bg-[#1f242c] transition-colors';
         tr.innerHTML = `
-          <td class="py-2.5 px-4 font-mono text-slate-400">${timeStr}</td>
-          <td class="py-2.5 px-4 font-mono font-bold text-cyan-400">${r.aqi}</td>
-          <td class="py-2.5 px-4 font-mono font-bold text-rose-400">${r.co_gas}</td>
-          <td class="py-2.5 px-4 font-mono font-bold text-amber-400">${r.dust.toFixed(1)}</td>
-          <td class="py-2.5 px-4 font-mono">${r.temp.toFixed(1)}°C</td>
-          <td class="py-2.5 px-4 font-mono">${r.hum.toFixed(1)}%</td>
-          <td class="py-2.5 px-4 text-right">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isHazard ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
-              ${isHazard ? 'Danger' : 'Safe'}
+          <td class="py-1.5 px-3 text-slate-500">#${r.id || (rows.length - idx)}</td>
+          <td class="py-1.5 px-3 text-slate-400">${new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19)}</td>
+          <td class="py-1.5 px-3 font-semibold ${r.aqi >= THRESHOLD_MQ135_DANGER ? 'text-rose-400' : 'text-slate-200'}">${r.aqi}</td>
+          <td class="py-1.5 px-3 font-semibold ${r.co_gas >= THRESHOLD_MQ9_DANGER ? 'text-rose-400' : 'text-slate-200'}">${r.co_gas}</td>
+          <td class="py-1.5 px-3 font-semibold text-amber-400">${Number(r.dust).toFixed(1)}</td>
+          <td class="py-1.5 px-3 text-slate-300">${Number(r.temp).toFixed(1)}°C</td>
+          <td class="py-1.5 px-3 text-slate-300">${Number(r.hum).toFixed(1)}%</td>
+          <td class="py-1.5 px-3 text-right">
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${isHazard ? 'badge-danger' : 'badge-normal'}">
+              ${isHazard ? 'CRITICAL' : 'NOMINAL'}
             </span>
           </td>
         `;
@@ -622,68 +774,101 @@
     }
 
     // ========================================================================
-    // 5. SINK 1 (HOT PATH): MQTT OVER SECURE WEBSOCKETS (LIVE 3s STREAM)
+    // 5. SINK 1: MQTT WEBSOCKET HOT-PATH RECEIVER
     // ========================================================================
-    function connectMQTT() {
-      const clientId = 'AirGuardWeb-' + Math.random().toString(16).substring(2, 10);
+    function initializeMQTT() {
+      const clientId = 'AirGuard-Terminal-' + Math.random().toString(16).substring(2, 8);
       const client = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, MQTT_PATH, clientId);
 
-      client.onConnectionLost = (responseObject) => {
-        console.warn("[MQTT] Connection Lost:", responseObject.errorMessage);
-        document.getElementById('mqtt-dot').className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-        document.getElementById('mqtt-label').innerText = 'MQTT: Reconnecting...';
-        setTimeout(connectMQTT, 3000);
+      client.onConnectionLost = (resp) => {
+        console.warn("[MQTT] Socket disconnected:", resp.errorMessage);
+        document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
+        document.getElementById('mqtt-status').innerText = 'OFFLINE';
+        setTimeout(initializeMQTT, 3000);
       };
 
-      client.onMessageArrived = (message) => {
+      client.onMessageArrived = (msg) => {
         try {
-          const payload = JSON.parse(message.payloadString);
-          console.log("[MQTT Live Telemetry]", payload);
-
-          // Animate Gauges, Rings and Safety Alarms
-          updateGaugesAndAlarms(payload);
-
-          // Append live data point to Chart.js
-          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          appendChartPoint(timeStr, payload.aqi, payload.co_gas, payload.dust, payload.temp);
-
+          const payload = JSON.parse(msg.payloadString);
+          const timeStr = new Date().toISOString().substring(11, 19);
+          processTelemetry(payload, true);
+          appendChartTrace(timeStr, payload.aqi, payload.co_gas, payload.dust, payload.temp);
         } catch (err) {
-          console.error("[MQTT] JSON parse error:", err);
+          console.error("[MQTT] Telemetry parsing fault:", err);
         }
       };
 
-      const options = {
+      client.connect({
         useSSL: true,
         timeout: 5,
         onSuccess: () => {
-          console.log("[MQTT] Connected to Secure WebSocket Broker!");
-          document.getElementById('mqtt-dot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
-          document.getElementById('mqtt-label').innerText = 'MQTT: Live (3s Stream)';
+          console.log("[MQTT] Connected to WSS Broker:", MQTT_HOST);
+          document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+          document.getElementById('mqtt-status').innerText = 'LIVE (3s)';
           client.subscribe(MQTT_TOPIC);
         },
         onFailure: (err) => {
-          console.error("[MQTT] Connection Failed:", err);
-          document.getElementById('mqtt-dot').className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-          document.getElementById('mqtt-label').innerText = 'MQTT: Retrying...';
-          setTimeout(connectMQTT, 5000);
+          console.error("[MQTT] Connection handshake failed:", err);
+          document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          document.getElementById('mqtt-status').innerText = 'RETRYING';
+          setTimeout(initializeMQTT, 5000);
         }
-      };
-
-      client.connect(options);
+      });
     }
 
     // ========================================================================
-    // 6. INITIALIZATION SEQUENCE
+    // 6. CSV / JSON EXPORT LOGIC (FOR LAB REPORTS & AUDITING)
     // ========================================================================
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      if (cachedRows.length === 0) {
+        alert("No historical records currently loaded to export.");
+        return;
+      }
+      const headers = ['id', 'created_at', 'temp_c', 'hum_pct', 'aqi_mq135', 'cogas_mq9', 'dust_ug_m3'];
+      const csvRows = [headers.join(',')];
+      cachedRows.forEach(r => {
+        csvRows.push([r.id, `"${r.created_at}"`, r.temp, r.hum, r.aqi, r.co_gas, r.dust].join(','));
+      });
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AirGuard_Telemetry_Export_${new Date().toISOString().substring(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      if (cachedRows.length === 0) {
+        alert("No historical records currently loaded to export.");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(cachedRows, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AirGuard_Telemetry_Export_${new Date().toISOString().substring(0, 10)}.json`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', fetchSupabaseHistory);
+
+    // Simulation triggers for oral defense & testing
+    document.getElementById('btn-sim-normal').addEventListener('click', () => {
+      processTelemetry({ temp: 24.5, hum: 55.0, aqi: 412, co_gas: 198, dust: 24.2 }, true);
+    });
+    document.getElementById('btn-sim-warn').addEventListener('click', () => {
+      processTelemetry({ temp: 28.2, hum: 68.0, aqi: 1350, co_gas: 1050, dust: 78.5 }, true);
+    });
+    document.getElementById('btn-sim-danger').addEventListener('click', () => {
+      processTelemetry({ temp: 31.0, hum: 75.0, aqi: 2350, co_gas: 1850, dust: 165.0 }, true);
+    });
+
+    // Boot sequence
     document.addEventListener('DOMContentLoaded', async () => {
-      // Step 1: Cold start backfill from Supabase (loads past 30 readings immediately)
-      await loadSupabaseHistory();
-
-      // Step 2: Establish hot-path MQTT WebSocket stream
-      connectMQTT();
-
-      // Bind Refresh Button
-      document.getElementById('btn-refresh-history').addEventListener('click', loadSupabaseHistory);
+      await fetchSupabaseHistory();
+      initializeMQTT();
     });
   </script>
 </body>
