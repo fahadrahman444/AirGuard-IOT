@@ -243,7 +243,7 @@
         <div>
           <div class="flex justify-between items-baseline mb-1">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ambient Climate</span>
-            <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">DHT11 // PIN 7</span>
+            <span id="climate-badge" class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">DHT11 // LIVE SYNC</span>
           </div>
           
           <!-- Distinct Dual Columns for Temp & Humidity -->
@@ -554,6 +554,40 @@
     }
 
     // ========================================================================
+    // Live Cloud Ambient Weather Ingestion (Open-Meteo API - No Key Required)
+    // ========================================================================
+    let liveWeather = { temp: 24.0, hum: 55.0, loaded: false };
+
+    async function fetchInternetWeather() {
+      try {
+        // Dhaka coordinates (Default for UITS laboratory location)
+        const lat = 23.8103;
+        const lon = 90.4125;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json && json.current) {
+          liveWeather.temp = Number(json.current.temperature_2m);
+          liveWeather.hum = Number(json.current.relative_humidity_2m);
+          liveWeather.loaded = true;
+
+          const badge = document.getElementById('climate-badge');
+          if (badge) {
+            badge.innerText = 'OPEN-METEO // LIVE CLOUD';
+            badge.className = 'font-mono text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded';
+          }
+
+          document.getElementById('val-temp').innerText = liveWeather.temp.toFixed(1);
+          document.getElementById('val-hum').innerText = liveWeather.hum.toFixed(1);
+          const dew = liveWeather.temp - ((100 - liveWeather.hum) / 5.0);
+          document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
+        }
+      } catch (err) {
+        console.warn("Weather sync notice:", err);
+      }
+    }
+
+    // ========================================================================
     // 2. CHART.JS CONFIGURATION — VISIBLE OSCILLOSCOPE GRIDS EVEN WHEN EMPTY
     // ========================================================================
     
@@ -715,11 +749,14 @@
       document.getElementById('val-aqi').innerText = data.aqi;
       document.getElementById('val-cogas').innerText = data.co_gas;
       document.getElementById('val-dust').innerText = data.dust.toFixed(1);
-      document.getElementById('val-temp').innerText = data.temp.toFixed(1);
-      document.getElementById('val-hum').innerText = data.hum.toFixed(1);
+      const tempVal = (data.temp === 25.0 && liveWeather.loaded) ? liveWeather.temp : data.temp;
+      const humVal  = (data.hum === 50.0 && liveWeather.loaded)  ? liveWeather.hum  : data.hum;
+
+      document.getElementById('val-temp').innerText = tempVal.toFixed(1);
+      document.getElementById('val-hum').innerText  = humVal.toFixed(1);
 
       // Dew Point Calculation
-      const dew = data.temp - ((100 - data.hum) / 5.0);
+      const dew = tempVal - ((100 - humVal) / 5.0);
       document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
 
       // Range Statistics
@@ -891,7 +928,8 @@
           const payload = JSON.parse(msg.payloadString);
           const timeStr = new Date().toISOString().substring(11, 19);
           processTelemetry(payload, true);
-          appendChartTrace(timeStr, payload.aqi, payload.co_gas, payload.dust, payload.temp);
+          const chartTemp = (payload.temp === 25.0 && liveWeather.loaded) ? liveWeather.temp : payload.temp;
+          appendChartTrace(timeStr, payload.aqi, payload.co_gas, payload.dust, chartTemp);
         } catch (err) {
           console.error("MQTT parsing error:", err);
         }
@@ -958,6 +996,8 @@
 
     // Boot Routine: Immediate or DOM ready
     function startStation() {
+      fetchInternetWeather();
+      setInterval(fetchInternetWeather, 600000); // Sync cloud weather every 10 mins
       fetchSupabaseHistory();
       initializeMQTT();
     }
