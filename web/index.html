@@ -289,6 +289,9 @@
             <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 1 // AIR POLLUTION & GAS SPECTRUM</span>
           </div>
           <div class="flex items-center space-x-3 text-[11px] font-mono">
+            <button id="btn-zoom-gas" class="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center" title="Magnify subtle sensor fluctuations">
+              <i class="fa-solid fa-magnifying-glass-chart text-sky-600 mr-1"></i><span id="zoom-gas-label">ZOOM: OFF</span>
+            </button>
             <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-sky-600"></span><span class="text-slate-600">MQ-135 AQI</span></span>
             <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-rose-600"></span><span class="text-slate-600">MQ-9 Gas</span></span>
           </div>
@@ -314,6 +317,9 @@
             <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 2 // PARTICULATE DUST & TEMPERATURE</span>
           </div>
           <div class="flex items-center space-x-3 text-[11px] font-mono">
+            <button id="btn-zoom-dust" class="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center" title="Magnify subtle sensor fluctuations">
+              <i class="fa-solid fa-magnifying-glass-chart text-amber-600 mr-1"></i><span id="zoom-dust-label">ZOOM: OFF</span>
+            </button>
             <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-amber-500"></span><span class="text-slate-600">Dust (µg/m³)</span></span>
             <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-emerald-600"></span><span class="text-slate-600">Temp (°C)</span></span>
           </div>
@@ -606,9 +612,10 @@
             data: [],
             borderColor: '#0284c7',
             backgroundColor: 'rgba(2, 132, 199, 0.05)',
-            borderWidth: 1.5,
-            pointRadius: 0,
-            tension: 0.1,
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            tension: 0.25,
             fill: true
           },
           {
@@ -616,9 +623,10 @@
             data: [],
             borderColor: '#e11d48',
             backgroundColor: 'rgba(225, 29, 72, 0.05)',
-            borderWidth: 1.5,
-            pointRadius: 0,
-            tension: 0.1,
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 4,
+            tension: 0.25,
             fill: true
           }
         ]
@@ -654,19 +662,21 @@
             label: 'Dust',
             data: [],
             borderColor: '#d97706',
-            borderWidth: 1.5,
-            pointRadius: 0,
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             yAxisID: 'y',
-            tension: 0.1
+            tension: 0.25
           },
           {
             label: 'Temperature',
             data: [],
             borderColor: '#059669',
-            borderWidth: 1.5,
-            pointRadius: 0,
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             yAxisID: 'y1',
-            tension: 0.1
+            tension: 0.25
           }
         ]
       },
@@ -698,12 +708,81 @@
       }
     });
 
+    // Interactive Auto-Zoom / Dynamic Scale Engine
+    let zoomGasEnabled = false;
+    let zoomDustEnabled = false;
+
+    const btnZoomGas = document.getElementById('btn-zoom-gas');
+    const labelZoomGas = document.getElementById('zoom-gas-label');
+    if (btnZoomGas) {
+      btnZoomGas.addEventListener('click', () => {
+        zoomGasEnabled = !zoomGasEnabled;
+        if (zoomGasEnabled) {
+          labelZoomGas.innerText = 'ZOOM: ON';
+          btnZoomGas.className = 'px-2 py-0.5 rounded border border-sky-400 bg-sky-50 text-sky-800 text-[10px] font-bold transition flex items-center shadow-sm';
+        } else {
+          labelZoomGas.innerText = 'ZOOM: OFF';
+          btnZoomGas.className = 'px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center';
+          chartGas.options.scales.y.min = 0;
+          chartGas.options.scales.y.max = 2500;
+          chartGas.options.scales.y.ticks.stepSize = 500;
+        }
+        updateGasZoom();
+        chartGas.update();
+      });
+    }
+
+    const btnZoomDust = document.getElementById('btn-zoom-dust');
+    const labelZoomDust = document.getElementById('zoom-dust-label');
+    if (btnZoomDust) {
+      btnZoomDust.addEventListener('click', () => {
+        zoomDustEnabled = !zoomDustEnabled;
+        if (zoomDustEnabled) {
+          labelZoomDust.innerText = 'ZOOM: ON';
+          btnZoomDust.className = 'px-2 py-0.5 rounded border border-amber-400 bg-amber-50 text-amber-800 text-[10px] font-bold transition flex items-center shadow-sm';
+        } else {
+          labelZoomDust.innerText = 'ZOOM: OFF';
+          btnZoomDust.className = 'px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center';
+          chartDust.options.scales.y.min = 0;
+          chartDust.options.scales.y.max = 200;
+          chartDust.options.scales.y.ticks.stepSize = 50;
+        }
+        updateDustZoom();
+        chartDust.update();
+      });
+    }
+
+    function updateGasZoom() {
+      if (!zoomGasEnabled) return;
+      const ptsAqi = chartGas.data.datasets[0].data;
+      const ptsGas = chartGas.data.datasets[1].data;
+      const all = [...ptsAqi, ...ptsGas].filter(v => typeof v === 'number' && !isNaN(v));
+      if (all.length > 0) {
+        const minV = Math.max(0, Math.min(...all) - 30);
+        const maxV = Math.max(...all) + 30;
+        chartGas.options.scales.y.min = Math.floor(minV / 20) * 20;
+        chartGas.options.scales.y.max = Math.ceil(maxV / 20) * 20;
+        chartGas.options.scales.y.ticks.stepSize = Math.max(10, Math.round((chartGas.options.scales.y.max - chartGas.options.scales.y.min) / 5));
+      }
+    }
+
+    function updateDustZoom() {
+      if (!zoomDustEnabled) return;
+      const ptsDust = chartDust.data.datasets[0].data.filter(v => typeof v === 'number' && !isNaN(v));
+      if (ptsDust.length > 0) {
+        const minV = Math.max(0, Math.min(...ptsDust) - 10);
+        const maxV = Math.max(...ptsDust) + 15;
+        chartDust.options.scales.y.min = Math.floor(minV / 5) * 5;
+        chartDust.options.scales.y.max = Math.ceil(maxV / 5) * 5;
+        chartDust.options.scales.y.ticks.stepSize = Math.max(5, Math.round((chartDust.options.scales.y.max - chartDust.options.scales.y.min) / 5));
+      }
+    }
+
     let hasReceivedData = false;
 
     function appendChartTrace(timestamp, aqi, cogas, dust, temp) {
       if (!hasReceivedData) {
         hasReceivedData = true;
-        // Clean out placeholder ticks on first real packet
         chartGas.data.labels = [];
         chartDust.data.labels = [];
         document.getElementById('chart-gas-standby').style.opacity = '0';
@@ -714,7 +793,8 @@
         }, 300);
       }
 
-      const maxPts = 30;
+      // Keep 120 points (~4 to 5 minutes history instead of disappearing in 60s)
+      const maxPts = 120;
       if (chartGas.data.labels.length >= maxPts) {
         chartGas.data.labels.shift();
         chartGas.data.datasets[0].data.shift();
@@ -730,6 +810,9 @@
       chartDust.data.labels.push(timestamp);
       chartDust.data.datasets[0].data.push(dust);
       chartDust.data.datasets[1].data.push(temp);
+
+      updateGasZoom();
+      updateDustZoom();
 
       chartGas.update();
       chartDust.update();
