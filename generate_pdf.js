@@ -165,7 +165,7 @@ function generateUITSStudentProposal(outputPath) {
 
     // Left Column: Submitted to
     doc.font('Helvetica-Bold').fontSize(8.2).fillColor(SECONDARY).text('SUBMITTED TO:', leftColX, cardY + 6);
-    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(PRIMARY).text('Abrar Mahbub Tanim', leftColX, cardY + 19);
+    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(PRIMARY).text('S. M. Zafrul Islam', leftColX, cardY + 19);
     doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text('Lecturer, Department of CSE', leftColX, cardY + 32);
     doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text('University of Information Technology & Sciences (UITS)', leftColX, cardY + 45);
     doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('Permanent Campus: Baridhara Nayanagar, Dhaka-1212', leftColX, cardY + 58);

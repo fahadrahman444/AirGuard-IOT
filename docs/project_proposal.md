@@ -15,7 +15,7 @@ Faculty of Science and Engineering
 * **Course Code:** CSE402
 * **Course Title:** Internet of Things Lab
 * **Semester:** 7th Semester (Autumn 2026)
-* **Submitted to:** Abrar Mahbub Tanim, Lecturer, Department of CSE, UITS
+* **Submitted to:** S. M. Zafrul Islam, Lecturer, Department of CSE, UITS
 
 ### Submitted By (Project Team)
 * **MD. Fahad Rahman (Team Leader)** (ID: `0432320005101071`)
