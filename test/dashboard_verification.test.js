@@ -240,4 +240,42 @@ describe('AirGuard Web Dashboard — Automated Quality & Integrity Suite', () =>
     );
   });
 
+  test('Test 10: Meteorological Station & Live Weather Integration', () => {
+    const weatherElementIds = [
+      'wx-temp',
+      'wx-feels',
+      'wx-hum',
+      'wx-wind',
+      'wx-pressure',
+      'wx-desc',
+      'wx-dispersion-badge',
+      'wx-dispersion-desc',
+      'weather-last-updated',
+      'btn-refresh-weather',
+      'ch3-weather-condition',
+      'ch3-wind-pill',
+      'ch3-dispersion-badge',
+      'fc-day-0',
+      'fc-day-1',
+      'fc-day-2'
+    ];
+
+    for (const id of weatherElementIds) {
+      const pattern = new RegExp(`id=["']${id}["']`);
+      assert.ok(
+        pattern.test(htmlContent),
+        `DOM element with id="${id}" must exist in web/index.html for live weather update`
+      );
+    }
+
+    assert.ok(
+      htmlContent.includes('https://api.open-meteo.com/v1/forecast'),
+      'web/index.html must fetch Open-Meteo forecast API'
+    );
+    assert.ok(
+      htmlContent.includes('23.8103') && htmlContent.includes('90.4125'),
+      'web/index.html must target Dhaka UITS campus coordinates (23.8103°N, 90.4125°E)'
+    );
+  });
+
 });

@@ -278,16 +278,22 @@
               </div>
             </div>
           </div>
+
+          <!-- Weather Condition quick badge -->
+          <div class="flex items-center justify-between font-mono text-[9px] bg-sky-50 text-sky-800 px-2 py-1 rounded border border-sky-100 my-1">
+            <span class="flex items-center gap-1"><span id="ch3-weather-icon">☀️</span> <span id="ch3-weather-condition" class="font-semibold">Dhaka: Syncing...</span></span>
+            <span id="ch3-wind-pill" class="text-slate-600 font-medium">-- km/h</span>
+          </div>
         </div>
 
         <div class="pt-2 border-t border-slate-100 space-y-1">
           <div class="flex justify-between font-mono text-[10px] text-slate-500">
             <span>Dew Point: <span id="val-dew" class="text-slate-800 font-semibold">--.- °C</span></span>
-            <span class="text-slate-500">Target: 22–27°C</span>
+            <span>Feels: <span id="val-feels-like" class="text-slate-700 font-medium">--.-</span>°C</span>
           </div>
           <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
-            <span>Envelope: 40–60% RH</span>
-            <span class="text-emerald-600 font-medium">Optimal Zone</span>
+            <span>Air Dispersion:</span>
+            <span id="ch3-dispersion-badge" class="text-emerald-600 font-medium">Nominal Airflow</span>
           </div>
         </div>
       </div>
@@ -373,6 +379,130 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>MODE: REAL-TIME (2S REFRESH)</span>
         </span>
+      </div>
+    </div>
+
+    <!-- Live Meteorological Station & Atmospheric Microclimate (Dhaka, Bangladesh) -->
+    <div class="p-4 rounded card-shell bg-gradient-to-r from-white via-sky-50/30 to-indigo-50/20 border border-sky-100 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-600 text-lg shadow-xs">
+            <i id="weather-station-icon" class="fa-solid fa-cloud-sun"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">Dhaka Meteorological & Microclimate Station</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> OPEN-METEO LIVE
+              </span>
+            </div>
+            <span class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+              <i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i> Dhaka, Bangladesh • UITS Campus Microclimate Area (23.81°N, 90.41°E)
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 text-[11px] font-mono">
+          <span id="weather-last-updated" class="text-slate-400 text-[10px]">Synced: --:--:--</span>
+          <button id="btn-refresh-weather" onclick="fetchInternetWeather()" class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-mono transition flex items-center gap-1 shadow-xs font-semibold cursor-pointer">
+            <i class="fa-solid fa-arrows-rotate text-[10px] text-sky-600"></i> UPDATE WEATHER
+          </button>
+        </div>
+      </div>
+
+      <!-- Current Meteorological Readings Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-3">
+        <!-- 1. Condition & Ambient Temp -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Condition & Temp</span>
+          <div class="flex items-baseline space-x-1.5 mt-1">
+            <span id="wx-current-icon" class="text-xl">☀️</span>
+            <span id="wx-temp" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400 font-mono">°C</span>
+          </div>
+          <span id="wx-desc" class="text-[10px] font-semibold text-sky-700 block mt-0.5 truncate">Syncing...</span>
+        </div>
+
+        <!-- 2. Apparent / Feels Like -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Feels Like</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="wx-feels" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400 font-mono">°C</span>
+          </div>
+          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono">Apparent Thermal</span>
+        </div>
+
+        <!-- 3. Relative Humidity & Dew Point -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Relative Humidity</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="wx-hum" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400 font-mono">%</span>
+          </div>
+          <span id="wx-dew-label" class="text-[10px] text-slate-500 block mt-0.5 font-mono">Dew Pt: --.-°C</span>
+        </div>
+
+        <!-- 4. Surface Wind Speed & Direction -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Surface Wind</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="wx-wind" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-400 font-mono">km/h</span>
+          </div>
+          <span id="wx-wind-dir" class="text-[10px] text-slate-600 block mt-0.5 font-mono">Dir: -- (--)</span>
+        </div>
+
+        <!-- 5. Barometric Pressure -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Barometer</span>
+          <div class="flex items-baseline space-x-1 mt-1">
+            <span id="wx-pressure" class="text-2xl font-bold font-mono text-slate-900">----</span>
+            <span class="text-xs text-slate-400 font-mono">hPa</span>
+          </div>
+          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono">Surface Atmos</span>
+        </div>
+
+        <!-- 6. Gas Dispersion Safety Correlation -->
+        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
+          <span class="text-[10px] font-mono text-slate-500 uppercase block">Gas Dispersion</span>
+          <div class="flex items-center space-x-1 mt-1">
+            <span id="wx-dispersion-badge" class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">MODERATE</span>
+          </div>
+          <span id="wx-dispersion-desc" class="text-[9px] text-slate-500 block mt-1 font-mono truncate">Ventilation: Stable</span>
+        </div>
+      </div>
+
+      <!-- 3-Day Micro-Forecast Strip -->
+      <div class="pt-2 border-t border-slate-100/80">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-calendar-days text-slate-400"></i> 3-DAY DHAKA ATMOSPHERIC FORECAST
+          </span>
+          <span class="text-[9px] font-mono text-slate-400">Updates hourly via WMO Station Model</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
+            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-0">Today</span></span>
+            <span id="fc-icon-0" class="text-base">☀️</span>
+            <span class="text-slate-600"><span id="fc-max-0" class="font-bold text-slate-800">--°</span> / <span id="fc-min-0" class="text-slate-400">--°</span></span>
+            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-0">0%</span></span>
+          </div>
+
+          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
+            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-1">Tomorrow</span></span>
+            <span id="fc-icon-1" class="text-base">⛅</span>
+            <span class="text-slate-600"><span id="fc-max-1" class="font-bold text-slate-800">--°</span> / <span id="fc-min-1" class="text-slate-400">--°</span></span>
+            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-1">0%</span></span>
+          </div>
+
+          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
+            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-2">Day After</span></span>
+            <span id="fc-icon-2" class="text-base">⛅</span>
+            <span class="text-slate-600"><span id="fc-max-2" class="font-bold text-slate-800">--°</span> / <span id="fc-min-2" class="text-slate-400">--°</span></span>
+            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-2">0%</span></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -723,21 +853,66 @@
     // ========================================================================
     // Live Cloud Ambient Weather Ingestion (Open-Meteo API - No Key Required)
     // ========================================================================
-    let liveWeather = { temp: 24.0, hum: 55.0, loaded: false };
+    let liveWeather = { 
+      temp: 24.0, 
+      hum: 55.0, 
+      apparent: 24.5,
+      windSpeed: 5.0,
+      windDir: 180,
+      pressure: 1012,
+      weatherCode: 0,
+      isDay: 1,
+      condition: 'Clear Sky',
+      loaded: false 
+    };
+
+    function decodeWmoCode(code, isDay = 1) {
+      const c = Number(code);
+      if (c === 0) return { desc: isDay ? 'Clear Sky' : 'Clear Night', icon: isDay ? '☀️' : '🌙', fa: isDay ? 'fa-sun text-amber-500' : 'fa-moon text-indigo-400' };
+      if (c === 1) return { desc: 'Mainly Clear', icon: isDay ? '🌤️' : '☁️', fa: 'fa-cloud-sun text-amber-400' };
+      if (c === 2) return { desc: 'Partly Cloudy', icon: '⛅', fa: 'fa-cloud-sun text-sky-400' };
+      if (c === 3) return { desc: 'Overcast', icon: '☁️', fa: 'fa-cloud text-slate-400' };
+      if (c === 45 || c === 48) return { desc: 'Fog / Haze', icon: '🌫️', fa: 'fa-smog text-slate-400' };
+      if (c >= 51 && c <= 55) return { desc: 'Drizzle', icon: '🌦️', fa: 'fa-cloud-rain text-sky-500' };
+      if (c >= 61 && c <= 65) return { desc: 'Rain', icon: '🌧️', fa: 'fa-cloud-showers-heavy text-sky-600' };
+      if (c >= 80 && c <= 82) return { desc: 'Rain Showers', icon: '🌦️', fa: 'fa-cloud-rain text-sky-600' };
+      if (c >= 95) return { desc: 'Thunderstorm', icon: '⛈️', fa: 'fa-bolt text-amber-500' };
+      return { desc: 'Moderate Clear', icon: '🌤️', fa: 'fa-cloud-sun text-amber-400' };
+    }
+
+    function decodeWindHeading(deg) {
+      const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      const idx = Math.round(Number(deg) / 22.5) % 16;
+      return dirs[idx] || 'N';
+    }
 
     async function fetchInternetWeather() {
       try {
         // Dhaka coordinates (Default for UITS laboratory location)
         const lat = 23.8103;
         const lon = 90.4125;
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`);
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FDhaka&forecast_days=3`;
+        
+        const res = await fetch(url);
         if (!res.ok) return;
         const json = await res.json();
         if (json && json.current) {
           liveWeather.temp = Number(json.current.temperature_2m);
           liveWeather.hum = Number(json.current.relative_humidity_2m);
+          liveWeather.apparent = Number(json.current.apparent_temperature !== undefined ? json.current.apparent_temperature : liveWeather.temp);
+          liveWeather.windSpeed = Number(json.current.wind_speed_10m || 0);
+          liveWeather.windDir = Number(json.current.wind_direction_10m || 0);
+          liveWeather.pressure = Number(json.current.surface_pressure || 1013);
+          liveWeather.weatherCode = Number(json.current.weather_code || 0);
+          liveWeather.isDay = Number(json.current.is_day !== undefined ? json.current.is_day : 1);
           liveWeather.loaded = true;
 
+          const wmo = decodeWmoCode(liveWeather.weatherCode, liveWeather.isDay);
+          liveWeather.condition = wmo.desc;
+          const dew = liveWeather.temp - ((100 - liveWeather.hum) / 5.0);
+          const windDirStr = decodeWindHeading(liveWeather.windDir);
+
+          // Update Top Card (Channel 3: Ambient Climate)
           const badge = document.getElementById('climate-badge');
           if (badge) {
             badge.innerText = 'OPEN-METEO // LIVE CLOUD';
@@ -746,8 +921,105 @@
 
           document.getElementById('val-temp').innerText = liveWeather.temp.toFixed(1);
           document.getElementById('val-hum').innerText = liveWeather.hum.toFixed(1);
-          const dew = liveWeather.temp - ((100 - liveWeather.hum) / 5.0);
           document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
+
+          const ch3Icon = document.getElementById('ch3-weather-icon');
+          if (ch3Icon) ch3Icon.innerText = wmo.icon;
+          const ch3Cond = document.getElementById('ch3-weather-condition');
+          if (ch3Cond) ch3Cond.innerText = `Dhaka: ${wmo.desc}`;
+          const ch3Wind = document.getElementById('ch3-wind-pill');
+          if (ch3Wind) ch3Wind.innerText = `${liveWeather.windSpeed.toFixed(1)} km/h`;
+          const ch3Feels = document.getElementById('val-feels-like');
+          if (ch3Feels) ch3Feels.innerText = liveWeather.apparent.toFixed(1);
+
+          const ch3Disp = document.getElementById('ch3-dispersion-badge');
+          if (ch3Disp) {
+            if (liveWeather.windSpeed < 4.0) {
+              ch3Disp.innerText = 'Stagnant (Risk)';
+              ch3Disp.className = 'text-rose-600 font-medium';
+            } else if (liveWeather.windSpeed < 12.0) {
+              ch3Disp.innerText = 'Optimal Airflow';
+              ch3Disp.className = 'text-emerald-600 font-medium';
+            } else {
+              ch3Disp.innerText = 'High Dispersal';
+              ch3Disp.className = 'text-sky-600 font-medium';
+            }
+          }
+
+          // Update Meteorological Station Card
+          const wxIcon = document.getElementById('wx-current-icon');
+          if (wxIcon) wxIcon.innerText = wmo.icon;
+          const wxTemp = document.getElementById('wx-temp');
+          if (wxTemp) wxTemp.innerText = liveWeather.temp.toFixed(1);
+          const wxDesc = document.getElementById('wx-desc');
+          if (wxDesc) wxDesc.innerText = wmo.desc;
+          const wxFeels = document.getElementById('wx-feels');
+          if (wxFeels) wxFeels.innerText = liveWeather.apparent.toFixed(1);
+          const wxHum = document.getElementById('wx-hum');
+          if (wxHum) wxHum.innerText = liveWeather.hum.toFixed(1);
+          const wxDewLabel = document.getElementById('wx-dew-label');
+          if (wxDewLabel) wxDewLabel.innerText = `Dew Pt: ${dew.toFixed(1)}°C`;
+          const wxWind = document.getElementById('wx-wind');
+          if (wxWind) wxWind.innerText = liveWeather.windSpeed.toFixed(1);
+          const wxWindDir = document.getElementById('wx-wind-dir');
+          if (wxWindDir) wxWindDir.innerText = `Dir: ${windDirStr} (${liveWeather.windDir}°)`;
+          const wxPress = document.getElementById('wx-pressure');
+          if (wxPress) wxPress.innerText = Math.round(liveWeather.pressure);
+
+          const wxDispBadge = document.getElementById('wx-dispersion-badge');
+          const wxDispDesc = document.getElementById('wx-dispersion-desc');
+          if (wxDispBadge && wxDispDesc) {
+            if (liveWeather.windSpeed < 4.0) {
+              wxDispBadge.innerText = 'STAGNANT';
+              wxDispBadge.className = 'text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 truncate';
+              wxDispDesc.innerText = 'Pollutant accumulation high';
+            } else if (liveWeather.windSpeed < 12.0) {
+              wxDispBadge.innerText = 'MODERATE';
+              wxDispBadge.className = 'text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 truncate';
+              wxDispDesc.innerText = 'Ventilation: Steady & nominal';
+            } else {
+              wxDispBadge.innerText = 'HIGH AERATION';
+              wxDispBadge.className = 'text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200 truncate';
+              wxDispDesc.innerText = 'Rapid outdoor pollutant dilution';
+            }
+          }
+
+          const wxUpdated = document.getElementById('weather-last-updated');
+          if (wxUpdated) {
+            const timeStr = new Date().toLocaleTimeString();
+            wxUpdated.innerText = `Synced: ${timeStr}`;
+          }
+
+          // 3-Day Forecast Strip
+          if (json.daily && json.daily.time && json.daily.time.length >= 3) {
+            const dayNames = ['Today', 'Tomorrow', 'Day After'];
+            for (let i = 0; i < 3; i++) {
+              const dCode = json.daily.weather_code[i];
+              const dWmo = decodeWmoCode(dCode, 1);
+              const maxT = Math.round(json.daily.temperature_2m_max[i]);
+              const minT = Math.round(json.daily.temperature_2m_min[i]);
+              const rainProb = json.daily.precipitation_probability_max ? json.daily.precipitation_probability_max[i] : 0;
+
+              const dayEl = document.getElementById(`fc-day-${i}`);
+              if (dayEl) {
+                try {
+                  const dObj = new Date(json.daily.time[i]);
+                  const weekday = dObj.toLocaleDateString(undefined, { weekday: 'short' });
+                  dayEl.innerText = `${dayNames[i]} (${weekday})`;
+                } catch (_) {
+                  dayEl.innerText = dayNames[i];
+                }
+              }
+              const iconEl = document.getElementById(`fc-icon-${i}`);
+              if (iconEl) iconEl.innerText = dWmo.icon;
+              const maxEl = document.getElementById(`fc-max-${i}`);
+              if (maxEl) maxEl.innerText = `${maxT}°`;
+              const minEl = document.getElementById(`fc-min-${i}`);
+              if (minEl) minEl.innerText = `${minT}°`;
+              const rainEl = document.getElementById(`fc-rain-${i}`);
+              if (rainEl) rainEl.innerText = `${rainProb}%`;
+            }
+          }
         }
       } catch (err) {
         console.warn("Weather sync notice:", err);
@@ -1287,6 +1559,8 @@
       // Dew Point Calculation
       const dew = tempVal - ((100 - humVal) / 5.0);
       document.getElementById('val-dew').innerText = dew.toFixed(1) + ' °C';
+      const feelsEl = document.getElementById('val-feels-like');
+      if (feelsEl && liveWeather.loaded) feelsEl.innerText = liveWeather.apparent.toFixed(1);
 
       // Range Statistics
       stats.aqi.min = Math.min(stats.aqi.min, data.aqi);
@@ -1519,6 +1793,7 @@
       const cogasPpmVal = document.getElementById('val-cogas-ppm') ? document.getElementById('val-cogas-ppm').innerText : 'N/A';
       const tempVal = document.getElementById('val-temp').innerText;
       const humVal = document.getElementById('val-hum').innerText;
+      const weatherDesc = document.getElementById('wx-desc') ? document.getElementById('wx-desc').innerText : 'Clear Sky';
       const dustVal = document.getElementById('val-dust').innerText;
       const packets = document.getElementById('packet-counter').innerText;
       const nowStr = new Date().toLocaleString();
@@ -1612,9 +1887,9 @@
                 <td><strong style="color: \${Number(aqiVal) >= 2000 ? '#dc2626' : Number(aqiVal) >= 1200 ? '#d97706' : '#16a34a'};">\${Number(aqiVal) >= 2000 ? 'HAZARD' : Number(aqiVal) >= 1200 ? 'CAUTION' : 'NOMINAL'}</strong></td>
               </tr>
               <tr>
-                <td><strong>Open-Meteo Cloud</strong></td>
-                <td>Ambient Temperature & Relative Humidity</td>
-                <td>Local Meteorological Grid</td>
+                <td><strong>Open-Meteo Microclimate</strong></td>
+                <td>Ambient Weather, Temp & Relative Humidity</td>
+                <td>Dhaka (UITS Station • \${weatherDesc})</td>
                 <td>\${tempVal}°C / \${humVal}% RH</td>
                 <td>20°C–27°C / 40%–60% RH</td>
                 <td><strong style="color: #16a34a;">SYNCHRONIZED</strong></td>
