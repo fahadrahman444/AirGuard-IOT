@@ -167,6 +167,26 @@
             <span class="text-slate-300">|</span>
             <span id="val-aqi-ppm" class="text-xs font-bold font-mono text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">-- PPM</span>
           </div>
+
+          <!-- Gas Decomposition Grid for MQ-135 -->
+          <div class="grid grid-cols-2 gap-1.5 my-2">
+            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
+              <span class="text-[9px] font-mono text-slate-500 uppercase block">CO₂ (Carbon Dioxide)</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-co2-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+              </div>
+              <span id="tag-co2" class="text-[9px] font-semibold text-emerald-600 block truncate">400–800 Normal</span>
+            </div>
+            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
+              <span class="text-[9px] font-mono text-slate-500 uppercase block">NH₃ (Ammonia)</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-nh3-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+              </div>
+              <span id="tag-nh3" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;1.0 Clean</span>
+            </div>
+          </div>
         </div>
 
         <div class="space-y-2 pt-2 border-t border-slate-100">
@@ -196,6 +216,26 @@
             <span class="text-xs text-slate-400 font-mono font-medium">counts</span>
             <span class="text-slate-300">|</span>
             <span id="val-cogas-ppm" class="text-xs font-bold font-mono text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">-- PPM</span>
+          </div>
+
+          <!-- Gas Decomposition Grid for MQ-9 -->
+          <div class="grid grid-cols-2 gap-1.5 my-2">
+            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
+              <span class="text-[9px] font-mono text-slate-500 uppercase block">CO (Carbon Monoxide)</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-co-ppm-detail" class="text-sm font-bold font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+              </div>
+              <span id="tag-co" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;5.0 Safe</span>
+            </div>
+            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
+              <span class="text-[9px] font-mono text-slate-500 uppercase block">CH₄ / LPG Gas</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span id="val-combustible-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+              </div>
+              <span id="tag-combustible" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;200 Trace</span>
+            </div>
           </div>
         </div>
 
@@ -463,6 +503,67 @@
         <button id="btn-sim-danger" class="px-3 py-1.5 rounded border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 font-medium transition">
           3. CRITICAL GAS LEAK (CODE RED)
         </button>
+      </div>
+    </details>
+
+    <!-- Gas Spectrum Reference & Standard Limits Guide (Normal vs Sensor Data vs Hazard) -->
+    <details class="p-3.5 rounded card-shell text-xs">
+      <summary class="cursor-pointer font-bold text-slate-700 hover:text-slate-900 transition flex items-center justify-between">
+        <span><i class="fa-solid fa-flask-vial mr-1.5 text-sky-600"></i> GAS SPECTRUM GUIDE: BASELINE VS LIVE SENSOR DATA VS HAZARD LIMITS (CLICK TO EXPAND)</span>
+        <span class="text-[10px] font-mono text-slate-400 uppercase">OSHA / WHO / ASHRAE Standards</span>
+      </summary>
+      <div class="mt-3 pt-3 border-t border-slate-100 overflow-x-auto">
+        <table class="w-full text-left font-mono text-[11px]">
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 text-[10px] uppercase">
+            <tr>
+              <th class="py-2.5 px-3">Target Gas Compound</th>
+              <th class="py-2.5 px-3">Detecting Sensor</th>
+              <th class="py-2.5 px-3">Clean Air Normal Baseline</th>
+              <th class="py-2.5 px-3">Your Live Sensor Reading</th>
+              <th class="py-2.5 px-3">Warning / Caution Limit</th>
+              <th class="py-2.5 px-3">Critical Hazard Limit</th>
+              <th class="py-2.5 px-3">Safety & Health Impact</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-slate-900">CO₂ (Carbon Dioxide)</td>
+              <td class="py-2.5 px-3 font-semibold text-sky-700">MQ-135</td>
+              <td class="py-2.5 px-3 text-emerald-700 font-semibold">400 – 600 PPM</td>
+              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-co2">-- PPM</td>
+              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 1,000 PPM</td>
+              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 2,500 – 5,000 PPM</td>
+              <td class="py-2.5 px-3 text-slate-500 font-sans">Drowsiness, reduced cognitive performance, ventilation alert</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-slate-900">NH₃ (Ammonia Vapor)</td>
+              <td class="py-2.5 px-3 font-semibold text-sky-700">MQ-135</td>
+              <td class="py-2.5 px-3 text-emerald-700 font-semibold">&lt; 1.0 PPM</td>
+              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-nh3">-- PPM</td>
+              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 25.0 PPM</td>
+              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 50.0 PPM</td>
+              <td class="py-2.5 px-3 text-slate-500 font-sans">Respiratory tract irritation, eye burning, industrial toxic risk</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-slate-900">CO (Carbon Monoxide)</td>
+              <td class="py-2.5 px-3 font-semibold text-rose-700">MQ-9</td>
+              <td class="py-2.5 px-3 text-emerald-700 font-semibold">0.5 – 5.0 PPM</td>
+              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-co">-- PPM</td>
+              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 25.0 PPM</td>
+              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 70.0 – 100 PPM</td>
+              <td class="py-2.5 px-3 text-slate-500 font-sans">Lethal silent poison, binds hemoglobin, severe hypoxia</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-slate-900">CH₄ / LPG (Combustible Fuel)</td>
+              <td class="py-2.5 px-3 font-semibold text-rose-700">MQ-9</td>
+              <td class="py-2.5 px-3 text-emerald-700 font-semibold">&lt; 200 PPM</td>
+              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-combustible">-- PPM</td>
+              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 1,000 PPM</td>
+              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 5,000 PPM (10% LEL)</td>
+              <td class="py-2.5 px-3 text-slate-500 font-sans">Fire, deflagration, explosive fuel accumulation risk</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </details>
 
@@ -1125,6 +1226,56 @@
         elAqiPpm.innerText = Math.round(aqiPpm) + ' PPM AQI';
         elAqiPpm.className = `text-xs font-bold font-mono px-1.5 py-0.5 rounded border ${data.aqi >= THRESHOLD_MQ135_DANGER ? 'bg-rose-100 text-rose-800 border-rose-300' : data.aqi >= THRESHOLD_MQ135_WARN ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`;
       }
+
+      // Detailed Gas Breakdown Calculations (CO2 & NH3 for MQ-135, CO & Combustible for MQ-9)
+      const co2Calculated = Math.min(5000, Math.round(aqiPpm));
+      const nh3Calculated = Math.min(100.0, Number((0.65 * Math.pow(aqiRatio, 2.4)).toFixed(2)));
+      const combustibleCalculated = Math.min(10000, Math.round(150.0 * Math.pow(coRatio, 2.9)));
+
+      // Update MQ-135 Breakdown Displays (CO2 & NH3)
+      const elCo2 = document.getElementById('val-co2-ppm');
+      const elNh3 = document.getElementById('val-nh3-ppm');
+      const elTagCo2 = document.getElementById('tag-co2');
+      const elTagNh3 = document.getElementById('tag-nh3');
+
+      if (elCo2) elCo2.innerText = co2Calculated;
+      if (elNh3) elNh3.innerText = nh3Calculated.toFixed(2);
+      if (elTagCo2) {
+        elTagCo2.innerText = co2Calculated >= 2000 ? 'HAZARD (>2000)' : co2Calculated >= 1000 ? 'ELEVATED (>1000)' : '400–800 Normal';
+        elTagCo2.className = `text-[9px] font-semibold block truncate ${co2Calculated >= 2000 ? 'text-rose-600' : co2Calculated >= 1000 ? 'text-amber-600' : 'text-emerald-600'}`;
+      }
+      if (elTagNh3) {
+        elTagNh3.innerText = nh3Calculated >= 50 ? 'HAZARD (>50)' : nh3Calculated >= 25 ? 'WARNING (>25)' : '<1.0 Clean';
+        elTagNh3.className = `text-[9px] font-semibold block truncate ${nh3Calculated >= 50 ? 'text-rose-600' : nh3Calculated >= 25 ? 'text-amber-600' : 'text-emerald-600'}`;
+      }
+
+      // Update MQ-9 Breakdown Displays (CO & Combustible Fuel)
+      const elCoDetail = document.getElementById('val-co-ppm-detail');
+      const elCombustible = document.getElementById('val-combustible-ppm');
+      const elTagCo = document.getElementById('tag-co');
+      const elTagCombustible = document.getElementById('tag-combustible');
+
+      if (elCoDetail) elCoDetail.innerText = coPpm.toFixed(1);
+      if (elCombustible) elCombustible.innerText = combustibleCalculated;
+      if (elTagCo) {
+        elTagCo.innerText = coPpm >= 70 ? 'HAZARD (>70)' : coPpm >= 25 ? 'WARNING (>25)' : '<5.0 Safe';
+        elTagCo.className = `text-[9px] font-semibold block truncate ${coPpm >= 70 ? 'text-rose-600' : coPpm >= 25 ? 'text-amber-600' : 'text-emerald-600'}`;
+      }
+      if (elTagCombustible) {
+        elTagCombustible.innerText = combustibleCalculated >= 5000 ? 'EXPLOSIVE (>5000)' : combustibleCalculated >= 1000 ? 'WARNING (>1000)' : '<200 Trace';
+        elTagCombustible.className = `text-[9px] font-semibold block truncate ${combustibleCalculated >= 5000 ? 'text-rose-600' : combustibleCalculated >= 1000 ? 'text-amber-600' : 'text-emerald-600'}`;
+      }
+
+      // Update Standards Guide Table Values
+      const tblCo2 = document.getElementById('table-val-co2');
+      const tblNh3 = document.getElementById('table-val-nh3');
+      const tblCo = document.getElementById('table-val-co');
+      const tblCombustible = document.getElementById('table-val-combustible');
+
+      if (tblCo2) tblCo2.innerText = co2Calculated + ' PPM';
+      if (tblNh3) tblNh3.innerText = nh3Calculated.toFixed(2) + ' PPM';
+      if (tblCo) tblCo.innerText = coPpm.toFixed(1) + ' PPM';
+      if (tblCombustible) tblCombustible.innerText = combustibleCalculated + ' PPM';
 
       document.getElementById('val-dust').innerText = data.dust.toFixed(1);
       const tempVal = (data.temp === 25.0 && liveWeather.loaded) ? liveWeather.temp : data.temp;
