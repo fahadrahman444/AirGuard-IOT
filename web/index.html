@@ -1473,34 +1473,52 @@
     // ========================================================================
     // 3. TELEMETRY PROCESSING ENGINE
     // ========================================================================
-    let lastMqttPacketTime = Date.now();
+    let lastMqttPacketTime = 0;
+    let lastTelemetryPacketTime = Date.now();
     let isNodeOffline = false;
 
-    // Heartbeat Watchdog: Detects hardware power cuts (> 8s without packets)
+    // Heartbeat Watchdog: Detects true hardware power cuts (> 25s without packets on either sink)
     setInterval(() => {
-      const elapsed = Date.now() - lastMqttPacketTime;
+      const now = Date.now();
+      const elapsedOverall = now - lastTelemetryPacketTime;
+      const elapsedMqtt = lastMqttPacketTime > 0 ? now - lastMqttPacketTime : 999999;
       const dot = document.getElementById('mqtt-dot');
       const statusText = document.getElementById('mqtt-status');
 
-      if (elapsed > 8000 && !isNodeOffline && packetCount > 0) {
+      if (elapsedOverall > 25000 && !isNodeOffline && packetCount > 0) {
         isNodeOffline = true;
         dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
         statusText.innerText = 'NO PACKET (POWER OFF / RECONNECTING)';
-        document.getElementById('safety-title').innerText = 'STATION OFFLINE — WAITING FOR HARDWARE RECONNECT';
-        document.getElementById('safety-desc').innerText = 'No UART telemetry received in over 8 seconds. Automatic sync will resume immediately upon power restoration.';
-        document.getElementById('status-pill').className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0';
+      } else if (!isNodeOffline && packetCount > 0) {
+        if (elapsedMqtt <= 8000) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = 'LIVE (3s)';
+        } else if (elapsedOverall <= 25000) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = 'SYNCED (15s)';
+        }
       }
     }, 1000);
 
-    function processTelemetry(data, isLive = true) {
+    function processTelemetry(data, isLive = true, source = 'all') {
       if (isLive) {
         packetCount++;
-        lastMqttPacketTime = Date.now();
+        lastTelemetryPacketTime = Date.now();
+        if (source === 'mqtt') {
+          lastMqttPacketTime = Date.now();
+        }
         if (isNodeOffline) {
           isNodeOffline = false;
-          document.getElementById('mqtt-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-          document.getElementById('mqtt-status').innerText = 'LIVE (3s)';
           showToastAlert('Hardware Reconnected!', 'Power restored to ESP32 / Mega. Telemetry stream auto-synced.', 'bg-emerald-600 border-emerald-700');
+        }
+        const dot = document.getElementById('mqtt-dot');
+        const statusText = document.getElementById('mqtt-status');
+        if (source === 'mqtt' || (Date.now() - lastMqttPacketTime <= 8000 && lastMqttPacketTime > 0)) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = 'LIVE (3s)';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          statusText.innerText = 'SYNCED (15s)';
         }
         document.getElementById('packet-counter').innerText = packetCount;
         document.getElementById('last-timestamp').innerText = new Date().toTimeString().split(' ')[0] + ' UTC';
@@ -1770,7 +1788,7 @@
           // If a new telemetry row arrived from the hardware:
           if (latest.id > lastProcessedSupabaseId) {
             lastProcessedSupabaseId = latest.id;
-            processTelemetry(latest, true);
+            processTelemetry(latest, true, 'supabase');
 
             const timeStr = new Date(latest.created_at).toISOString().substring(11, 19);
             const chartTemp = (latest.temp === 25.0 && liveWeather.loaded) ? liveWeather.temp : latest.temp;
@@ -1831,7 +1849,7 @@
         try {
           const payload = JSON.parse(msg.payloadString);
           const timeStr = new Date().toISOString().substring(11, 19);
-          processTelemetry(payload, true);
+          processTelemetry(payload, true, 'mqtt');
           const chartTemp = (payload.temp === 25.0 && liveWeather.loaded) ? liveWeather.temp : payload.temp;
           appendChartTrace(timeStr, payload.aqi, payload.co_gas, payload.dust, chartTemp);
         } catch (err) {
