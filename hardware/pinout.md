@@ -1,10 +1,36 @@
-# Hardware Wiring, Pinout Diagram & Arduino IDE Setup Guide — AirGuard IoT
+# Hardware Wiring, Pinout Diagram & Dual-MCU Setup Guide — AirGuard IoT
 
-This document provides a comprehensive, component-by-component hardware connection guide, complete ESP32-S3 DevKit pinout diagrams, schematic circuit diagrams, and step-by-step Arduino IDE 2.x setup instructions for assembling and programming the **AirGuard IoT** station.
+This document provides a comprehensive component-by-component hardware connection guide, complete Arduino Mega 2560 and ESP32-S3 pinout diagrams, schematic circuit diagrams, and step-by-step flashing instructions for the **AirGuard IoT** station.
 
 ---
 
-## 1. Master Pin Connection Table
+## 0. Active Physical Bench Architecture: Arduino Mega 2560 + ESP32-S3 Bridge
+
+In the active laboratory deployment, the system employs an **Arduino Mega 2560** as the primary 5V analog sensor acquisition coprocessor and an **ESP32-S3** as the dual-sink IoT cloud gateway:
+
+### Active Bench Inter-Connection Table:
+| Component / Wire | From (Source) | To (Destination) | Function / Signal | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **MQ-9 (Gas/CO)** | `AO` (Analog Out) | Arduino Mega **Pin A0** | 10-bit ADC Input | Powered by Mega 5V & GND |
+| **MQ-135 (Air Quality)** | `AO` (Analog Out) | Arduino Mega **Pin A1** | 10-bit ADC Input | Powered by Mega 5V & GND |
+| **UART Telemetry Stream** | Arduino Mega **TX1 (Pin 18)** | ESP32-S3 **GPIO 16 (RX)** | 9600 Baud CSV Serial | **Requires 1kΩ / 2kΩ Voltage Divider!** |
+| **Common Ground** | Arduino Mega **GND** | ESP32-S3 **GND** | Zero-Volt Reference | Mandatory equipotential ground |
+| **Local Status Indicator** | ESP32-S3 **GPIO 15 / Onboard** | Onboard LED | Network Status | Blinks on Wi-Fi/MQTT sync |
+
+```
+[ MQ-9 Gas Sensor ] ---- (AO) ----> Arduino Mega Pin A0
+[ MQ-135 AQI Sensor ] -- (AO) ----> Arduino Mega Pin A1
+
+Arduino Mega TX1 (Pin 18) ----- [ 1kΩ Resistor ] -----+-----> ESP32-S3 GPIO 16 (RX)
+                                                      |
+                                              [ 2kΩ Resistor ]
+                                                      |
+Arduino Mega GND -------------------------------------+-----> ESP32-S3 GND
+```
+
+---
+
+## 1. Standalone Direct ESP32-S3 Pin Connection Table (Alternative Direct Mode)
 
 | Peripheral / Sensor | Sensor Pin | ESP32-S3 Pin | Function / Mode | Operating Voltage & Protection |
 | :--- | :--- | :--- | :--- | :--- |

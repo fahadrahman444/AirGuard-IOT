@@ -35,27 +35,30 @@
 
 ## 1. Project Overview
 
-**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, lethal carbon monoxide (CO), combustible gas leaks, airborne dust particles, and ambient climate conditions in real time (with an analog hardware interface reserved for future oxygen sensing). 
+**AirGuard IoT** is an end-to-end edge-to-cloud environmental monitoring station designed to detect atmospheric degradation, lethal carbon monoxide (CO), combustible gas leaks, airborne dust particles, and ambient climate conditions in real time (with hardware hooks reserved for future oxygen sensing). 
 
-Driven by an all-in-one **ESP32-S3** microcontroller (Dual-Core Xtensa LX7 @ 240 MHz), the system unifies high-speed deterministic analog acquisition, on-site alarm triggering, and integrated 2.4 GHz Wi-Fi connectivity on a single silicon platform. 
+Driven by a collaborative **Arduino Mega 2560** (5V Sensor Acquisition Coprocessor) and an **ESP32-S3** (3.3V Dual-Core IoT Cloud Gateway @ 240 MHz), the system unifies high-speed deterministic analog acquisition, on-site alarm triggering, and integrated 2.4 GHz Wi-Fi connectivity.
 
 The edge node implements a **Dual-Sink Hybrid Cloud Architecture**:
-1. **Sink 1 (Hot Path — Sub-100ms Live Push):** High-frequency telemetry streamed every **3 seconds** over MQTT to a broker for instant browser gauge animations and alarm alerts.
-2. **Sink 2 (Cold Path — Durable Storage):** Low-frequency telemetry committed every **15 seconds** over HTTPS REST directly to **Supabase Postgres** for durable historical persistence and instant chart backfilling upon page load.
+1. **Sink 1 (Hot Path — Sub-Second Live Push):** High-frequency telemetry streamed every **2 seconds** over MQTT to HiveMQ (`broker.hivemq.com:1883`) for instant browser oscilloscope traces, gauge animations, and real-time audio/push notifications.
+2. **Sink 2 (Cold Path — Durable Storage):** Low-frequency telemetry committed every **15 seconds** over HTTPS REST directly to **Supabase Postgres** for durable historical persistence, cold-start backfilling, and official compliance PDF reporting.
 
 ---
 
 ## 2. Key Features
 
-- **Single-Chip All-in-One Architecture:** Powered by the **ESP32-S3**, eliminating dual-MCU wiring, level-shifters, and UART communication bottlenecks.
-- **Dual-Sink Hybrid Cloud Ingestion:** Decoupled Hot Path (MQTT @ 3s) and Cold Path (Supabase @ 15s) guarantees sub-100ms real-time responsiveness without chart cold-start delays.
-- **Multi-Gas Air Quality Monitoring:** Continuously quantifies indoor/ambient air pollution (CO₂, NH₃, benzene, smoke) via an MQ-135 sensor.
-- **Carbon Monoxide & Flammable Gas Leakage Detection:** Detects dangerous CO gas alongside combustible fuels (methane, LPG) using an MQ-9 sensor to avoid poisoning and fire hazards.
-- **Particulate Matter (Dust) Detection:** Optical dust sensing (Sharp GP2Y1010AU0F) assessing fine suspended particulates in µg/m³.
-- **Climate Monitoring:** Digital temperature and relative humidity tracking using a DHT11/DHT22 sensor.
-- **Dual-Layer Alert System:** Instantaneous on-site audio-visual alarms (active buzzer + tri-color LEDs) paired with remote web/cloud alert banners and audio siren.
-- **Real-Time Web Dashboard:** Responsive single-page dashboard with SVG progress gauges, rolling Chart.js plots, historical database table, and zero server hosting overhead.
-- **Future Scope / Phase 2 Upgrade (Oxygen Concentration):** Dedicated ADC1 channel (`GPIO 5`) is reserved for electrochemical O₂ sensing (ME2-O2 / Grove O₂), deferred from Phase 1 due to sensor procurement costs.
+- **Dual-MCU Bench Architecture:** Combines the **Arduino Mega 2560** (multi-channel 5V ADC acquisition engine) with the **ESP32-S3** (Dual-Core IoT edge gateway) interfaced via hardware UART with a protective voltage divider.
+- **Dual-Sink Hybrid Cloud Ingestion:** Decoupled Hot Path (MQTT @ 2s) and Cold Path (Supabase @ 15s) guarantees sub-second responsiveness without database quota exhaustion.
+- **Multi-Gas Air Quality Monitoring (MQ-135):** Continuously quantifies indoor/ambient air pollution, calculating real-world concentrations for $\text{CO}_2$ (400–800 PPM normal) and $\text{NH}_3$ (Ammonia vapor).
+- **Carbon Monoxide & Flammable Gas Detection (MQ-9):** Detects lethal odorless Carbon Monoxide ($\text{CO}$) alongside combustible fuels ($\text{CH}_4$, LPG) to prevent hypoxia and fire hazards.
+- **Atmospheric Gas Spectrum Reference Table:** Built-in interactive dashboard guide displaying Clean Air Baselines vs Live Sensor PPM vs International Hazard Limits (OSHA, WHO, ASHRAE).
+- **Live Dhaka Meteorological Station:** Integrated Open-Meteo Cloud API automatically synchronizing Dhaka (UITS Campus Area • `23.81°N, 90.41°E`) ambient temperature, relative humidity, barometric pressure, wind speed/direction, and 3-day forecast.
+- **Gas Dispersion Safety Correlation:** Real-time ventilation index correlating wind speed with indoor/outdoor gas accumulation risk (Stagnant vs Moderate vs High Aeration).
+- **Interactive Timeline History Views:** Switch between `⚡ LIVE STREAM (2s)`, `📊 HOURLY BREAKDOWN`, and `📅 24-HOUR DAY TIMELINE` to analyze diurnal air quality shifts.
+- **Auto-Zoom Oscilloscope Traces:** Interactive toggle that magnifies subtle sensor fluctuations against standard fixed oscilloscope scales.
+- **1-Click Official Inspection Certificate (PDF):** Instant academic/industrial compliance report generator with pre-filled UITS course credentials and Course Lecturer **S. M. Zafrul Islam**.
+- **OneSignal Web Push & Audio Alerts:** Instant browser push notifications and acoustic siren alerts during critical gas leakage conditions.
+- **Phase 2 Future Scope Badging:** Optical dust sensing (Sharp GP2Y1010) and Electrochemical Oxygen ($O_2$ ME2-O2) reserved and badged on dashboard.
 
 ---
 
@@ -63,48 +66,53 @@ The edge node implements a **Dual-Sink Hybrid Cloud Architecture**:
 
 ```mermaid
 flowchart TD
-    subgraph Sensing_Layer["Sensing Layer (Active Phase 1)"]
-        MQ135["MQ-135 (Air Quality & Smoke)"]
+    subgraph Sensing_Layer["Sensing Layer (Active Hardware + Phase 2 Scope)"]
+        MQ135["MQ-135 (Air Quality, CO2, NH3, Smoke)"]
         MQ9["MQ-9 (Carbon Monoxide & Combustible Gas)"]
-        DUST["Sharp GP2Y1010 Dust Sensor"]
-        DHT["DHT11 / DHT22 (Temp & Humidity)"]
-        O2["[Future Phase 2] ME2-O2 Sensor"]:::future
+        METEO["Open-Meteo Cloud (Dhaka Weather & Wind)"]
+        DUST["[Future Phase 2] Sharp GP2Y1010 Dust Sensor"]:::future
+        O2["[Future Phase 2] ME2-O2 Oxygen Sensor"]:::future
     end
 
     classDef future stroke-dasharray: 5 5,stroke:#999,color:#777;
 
-    subgraph ESP32S3_SoC["All-in-One Controller (ESP32-S3)"]
-        SENS_ADC["ADC1 Sampling & Voltage Scaling"]
-        LOGIC["Dual-Core Xtensa LX7 (Threshold Logic)"]
-        WIFI_RADIO["Integrated 2.4 GHz 802.11 b/g/n Wi-Fi"]
-        ALARM["Active Buzzer & Tri-Color Status LEDs"]
+    subgraph Coprocessor["Sensor Acquisition Coprocessor (Arduino Mega 2560)"]
+        MEGA_ADC["10-bit ADC Acquisition (A0 = MQ-9, A1 = MQ-135)"]
+        MEGA_UART["UART1 Serial Transmitter (TX1 = Pin 18 @ 9600 Baud)"]
+    end
+
+    subgraph ESP32S3_Gateway["IoT Edge Cloud Gateway (ESP32-S3)"]
+        UART_RX["UART Hardware Serial (GPIO 16 RX via 1k/2k Divider)"]
+        SCALER["10-bit to 12-bit Scale & PPM Estimation Engine"]
         DISPATCH{"Dual-Sink Dispatcher"}
+        WIFI_RADIO["2.4 GHz Wi-Fi Stack"]
     end
 
-    subgraph Cloud_Layer["Cloud Ingestion & Persistence"]
-        BROKER["MQTT Broker (HiveMQ)<br>Port 1883"]
-        SUPABASE[("Supabase Postgres DB<br>PostgREST API")]
+    subgraph Cloud_Layer["Dual-Sink Cloud Infrastructure"]
+        BROKER["HiveMQ MQTT Broker<br>broker.hivemq.com:1883"]
+        SUPABASE[("Supabase Postgres DB<br>HTTPS REST Endpoint")]
     end
 
-    subgraph Web_Layer["Client Presentation Layer (web/index.html)"]
-        GAUGES["Live SVG Dials & Hazard Banner"]
-        CHARTS["Chart.js Rolling Time-Series"]
-        TABLE["Historical Database Log Table"]
+    subgraph Web_Layer["Client Presentation Layer (GitHub Pages)"]
+        DASHBOARD["AirGuard Web Dashboard (web/index.html)"]
+        WEATHER_STATION["Dhaka Microclimate Station Widget"]
+        CHARTS["Dual Chart.js Oscilloscopes"]
+        AUDIT_TABLE["Historical Supabase Ledger Table"]
+        PDF_REPORT["1-Click Official Inspection PDF Certificate"]
     end
 
-    Sensing_Layer -->|Analog (ADC1) & Digital One-Wire| SENS_ADC
-    SENS_ADC --> LOGIC
-    LOGIC -->|Threshold Trigger| ALARM
-    LOGIC --> WIFI_RADIO
-    WIFI_RADIO --> DISPATCH
+    MQ9 & MQ135 -->|Analog 5V AO| MEGA_ADC
+    MEGA_ADC --> MEGA_UART
+    MEGA_UART -->|5V TX1 CSV Frame| UART_RX
+    UART_RX --> SCALER
+    SCALER --> DISPATCH
+    DISPATCH -->|Every 2s (Hot Path MQTT)| BROKER
+    DISPATCH -->|Every 15s (Cold Path HTTPS)| SUPABASE
 
-    DISPATCH -->|"Every 3s (Hot Path)"| BROKER
-    DISPATCH -->|"Every 15s (Cold Path)"| SUPABASE
-
-    BROKER -->|"WSS Port 8884"| GAUGES
-    BROKER -->|"WSS Port 8884"| CHARTS
-    SUPABASE -->|"HTTPS REST Select (On Load)"| CHARTS
-    SUPABASE -->|"HTTPS REST Select"| TABLE
+    BROKER -->|WSS Port 8884| DASHBOARD
+    SUPABASE -->|HTTPS REST Select| DASHBOARD
+    METEO -->|Open-Meteo API JSON| WEATHER_STATION
+    DASHBOARD --> CHARTS & AUDIT_TABLE & PDF_REPORT
 ```
 
 ---
@@ -120,16 +128,24 @@ AirGuard-IOT/
 │   └── assets/
 │       └── uits_logo.png              # Official UITS university crest
 ├── hardware/
-│   ├── pinout.md                      # ESP32-S3 pin mapping, ADC1 rules, schematics & Arduino IDE setup
-│   └── bill_of_materials.md           # Complete components list & specifications
+│   ├── pinout.md                      # Arduino Mega + ESP32-S3 pin mapping, voltage divider & schematics
+│   └── bill_of_materials.md           # Complete components list, models & specifications
 ├── firmware/
+│   ├── README.md                      # Comprehensive firmware guide, protocols, and flashing instructions
+│   ├── arduino_mega_airguard/
+│   │   └── arduino_mega_airguard.ino  # Arduino Mega 2560 sensor acquisition sketch
+│   ├── esp32_uart_airguard/
+│   │   └── esp32_uart_airguard.ino    # ESP32-S3 UART bridge, MQTT streamer & Supabase client
 │   └── esp32_airguard/
-│       └── esp32_airguard.ino         # Dual-Sink ESP32-S3 firmware (MQTT + Supabase)
+│       └── esp32_airguard.ino         # Standalone direct ESP32-S3 firmware
 ├── supabase/
 │   └── migrations/
 │       └── 20261112000000_create_telemetry.sql # Database schema & RLS policies
+├── test/
+│   └── dashboard_verification.test.js # Automated 10-point test runner (Node.js test framework)
 ├── web/
-│   └── index.html                     # Responsive real-time web dashboard (MQTT + Supabase)
+│   ├── index.html                     # Real-time web dashboard (TailwindCSS, Chart.js, MQTT, Open-Meteo)
+│   └── OneSignalSDKWorker.js          # Web Push Service Worker
 ├── generate_pdf.js                    # Automated PDF proposal generator
 ├── .gitignore                         # Git ignore rules for embedded development
 └── README.md                          # Main project documentation
@@ -137,7 +153,33 @@ AirGuard-IOT/
 
 ---
 
-## 5. Hardware Pinout Quick Reference
+## 5. Gas Spectrum & Real-World Safety Standards
+
+The AirGuard IoT system references established international occupational safety benchmarks:
+
+| Target Gas Compound | Detecting Sensor | Clean Air Normal Baseline | Permissible Safe Limit | Critical Hazard Limit | Governing Standard |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **$\text{CO}_2$ (Carbon Dioxide)** | **MQ-135** | 400 – 420 PPM | $< 1,000\text{ PPM}$ | $> 5,000\text{ PPM}$ | **ASHRAE 62.1 / OSHA PEL** |
+| **$\text{NH}_3$ (Ammonia Vapor)** | **MQ-135** | $< 0.1 - 1.0\text{ PPM}$ | $< 25\text{ PPM}$ | $> 50\text{ PPM}$ | **OSHA PEL / NIOSH REL** |
+| **$\text{CO}$ (Carbon Monoxide)** | **MQ-9** | $0.1 - 2.0\text{ PPM}$ | $< 35 - 50\text{ PPM}$ | $> 100\text{ PPM}$ | **OSHA 8-hr TWA / WHO** |
+| **$\text{CH}_4$ / LPG (Combustible)** | **MQ-9** | $\approx 1.9\text{ PPM}$ | $< 1,000\text{ PPM}$ ($< 5\%\text{ LEL}$) | $> 5,000\text{ PPM}$ ($10\%\text{ LEL}$) | **NFPA 54 / OSHA Safety Band** |
+| **Suspended PM2.5 (Dust)** | **GP2Y1010** | $< 10\text{ }\mu\text{g/m}^3$ | $< 15\text{ }\mu\text{g/m}^3$ | $> 75\text{ }\mu\text{g/m}^3$ | **WHO Global Air Quality** |
+| **$\text{O}_2$ (Oxygen Concentration)** | **ME2-O2** | $20.9\%\text{ Vol}$ | $19.5\% - 23.5\%\text{ Vol}$ | $< 19.5\%\text{ (Hypoxia)}$ | **OSHA Enclosed Space Rule** |
+
+---
+
+## 6. Hardware Pinout Quick Reference (Active Dual-MCU Bench)
+
+```
+Arduino Mega Pin A0 <--- MQ-9 AO (Analog 0-5V)
+Arduino Mega Pin A1 <--- MQ-135 AO (Analog 0-5V)
+
+Mega TX1 (Pin 18) --- [ 1kΩ Resistor ] ---+---> ESP32-S3 GPIO 16 (RX)
+                                          |
+                                  [ 2kΩ Resistor ]
+                                          |
+Mega GND ---------------------------------+---> ESP32-S3 GND (Common Ground)
+```
 
 | Sensor / Peripheral | Sensor Pin | ESP32-S3 Pin | Function / Description |
 | :--- | :--- | :--- | :--- |
