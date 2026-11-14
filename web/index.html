@@ -279,6 +279,32 @@
 
     </div>
 
+    <!-- Time Horizon & Point-of-Day History Filter Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded card-shell">
+      <div class="flex items-center space-x-2">
+        <span class="text-xs font-bold text-slate-700 uppercase tracking-tight flex items-center">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5 text-slate-400"></i> TIMELINE VIEW:
+        </span>
+        <div class="flex items-center space-x-1 font-mono text-[11px]">
+          <button id="btn-mode-live" class="px-2.5 py-1 rounded font-semibold transition bg-slate-900 text-white shadow-sm">
+            ⚡ LIVE STREAM
+          </button>
+          <button id="btn-mode-hourly" class="px-2.5 py-1 rounded font-medium transition bg-slate-100 hover:bg-slate-200 text-slate-700">
+            📊 HOURLY BREAKDOWN
+          </button>
+          <button id="btn-mode-24h" class="px-2.5 py-1 rounded font-medium transition bg-slate-100 hover:bg-slate-200 text-slate-700">
+            📅 24-HOUR DAY TIMELINE
+          </button>
+        </div>
+      </div>
+      <div class="text-[11px] font-mono text-slate-500 flex items-center space-x-2">
+        <span id="timeline-indicator" class="flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>MODE: REAL-TIME (2S REFRESH)</span>
+        </span>
+      </div>
+    </div>
+
     <!-- Dual Oscilloscope Waveform Traces (Fixed Visible Grid & Active Standby) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       
@@ -778,6 +804,179 @@
       }
     }
 
+    // ========================================================================
+    // Time Horizon & Hourly Point-of-Day History Engine
+    // ========================================================================
+    let currentTimelineMode = 'live'; // 'live', 'hourly', '24h'
+    let liveCache = { labels: [], aqi: [], cogas: [], dust: [], temp: [] };
+
+    const btnModeLive = document.getElementById('btn-mode-live');
+    const btnModeHourly = document.getElementById('btn-mode-hourly');
+    const btnMode24h = document.getElementById('btn-mode-24h');
+    const timelineIndicator = document.getElementById('timeline-indicator');
+
+    function updateTimelineButtons(mode) {
+      currentTimelineMode = mode;
+      const activeClass = 'px-2.5 py-1 rounded font-semibold transition bg-slate-900 text-white shadow-sm';
+      const inactiveClass = 'px-2.5 py-1 rounded font-medium transition bg-slate-100 hover:bg-slate-200 text-slate-700';
+
+      if (btnModeLive) btnModeLive.className = mode === 'live' ? activeClass : inactiveClass;
+      if (btnModeHourly) btnModeHourly.className = mode === 'hourly' ? activeClass : inactiveClass;
+      if (btnMode24h) btnMode24h.className = mode === '24h' ? activeClass : inactiveClass;
+    }
+
+    if (btnModeLive) {
+      btnModeLive.addEventListener('click', () => {
+        updateTimelineButtons('live');
+        timelineIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>MODE: REAL-TIME OSCILLOSCOPE (STREAMING)</span>';
+        
+        // Restore live cached traces
+        chartGas.data.labels = [...liveCache.labels];
+        chartGas.data.datasets[0].data = [...liveCache.aqi];
+        chartGas.data.datasets[1].data = [...liveCache.cogas];
+
+        chartDust.data.labels = [...liveCache.labels];
+        chartDust.data.datasets[0].data = [...liveCache.dust];
+        chartDust.data.datasets[1].data = [...liveCache.temp];
+
+        updateGasZoom();
+        updateDustZoom();
+        chartGas.update();
+        chartDust.update();
+      });
+    }
+
+    if (btnModeHourly) {
+      btnModeHourly.addEventListener('click', async () => {
+        updateTimelineButtons('hourly');
+        await loadHourlyBreakdown();
+      });
+    }
+
+    if (btnMode24h) {
+      btnMode24h.addEventListener('click', async () => {
+        updateTimelineButtons('24h');
+        await load24HourTimeline();
+      });
+    }
+
+    // Load Hourly Aggregated Breakdown (Hour by Hour across the Day)
+    async function loadHourlyBreakdown() {
+      timelineIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>COMPUTING HOURLY DAY AVERAGES...</span>';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/telemetry?order=created_at.desc&limit=500`, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const rows = await res.json();
+        if (!rows || rows.length === 0) {
+          timelineIndicator.innerHTML = '<span class="text-rose-500">NO DATABASE SAMPLES LOGGED YET</span>';
+          return;
+        }
+
+        const chrono = [...rows].reverse();
+        // Group by calendar day & hour: e.g. "01:00 AM", "02:00 AM", etc.
+        const hourlyBuckets = new Map();
+
+        chrono.forEach(r => {
+          const d = new Date(r.created_at);
+          // Format as "01:00 AM", "02:00 PM"
+          const hourLabel = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/:\d\d/, ':00');
+          if (!hourlyBuckets.has(hourLabel)) {
+            hourlyBuckets.set(hourLabel, { aqiSum: 0, cogasSum: 0, dustSum: 0, tempSum: 0, count: 0 });
+          }
+          const b = hourlyBuckets.get(hourLabel);
+          b.aqiSum += Number(r.aqi);
+          b.cogasSum += Number(r.co_gas);
+          b.dustSum += Number(r.dust);
+          b.tempSum += Number(r.temp);
+          b.count++;
+        });
+
+        const labels = [];
+        const aqiAverages = [];
+        const cogasAverages = [];
+        const dustAverages = [];
+        const tempAverages = [];
+
+        for (const [hour, b] of hourlyBuckets.entries()) {
+          labels.push(hour);
+          aqiAverages.push(Math.round(b.aqiSum / b.count));
+          cogasAverages.push(Math.round(b.cogasSum / b.count));
+          dustAverages.push(Number((b.dustSum / b.count).toFixed(1)));
+          tempAverages.push(Number((b.tempSum / b.count).toFixed(1)));
+        }
+
+        chartGas.data.labels = labels;
+        chartGas.data.datasets[0].data = aqiAverages;
+        chartGas.data.datasets[1].data = cogasAverages;
+
+        chartDust.data.labels = labels;
+        chartDust.data.datasets[0].data = dustAverages;
+        chartDust.data.datasets[1].data = tempAverages;
+
+        updateGasZoom();
+        updateDustZoom();
+        chartGas.update();
+        chartDust.update();
+
+        timelineIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span><span>HOURLY TIMELINE: ${labels.length} HOURLY SLOTS DISPLAYED</span>`;
+      } catch (err) {
+        console.warn("Hourly aggregation error:", err);
+        timelineIndicator.innerHTML = '<span class="text-rose-500">FAILED TO LOAD HOURLY DATA</span>';
+      }
+    }
+
+    // Load High-Resolution 24-Hour Continuous Timeline
+    async function load24HourTimeline() {
+      timelineIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>FETCHING 24-HOUR DATABASE HISTORY...</span>';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/telemetry?order=created_at.desc&limit=300`, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const rows = await res.json();
+        if (!rows || rows.length === 0) {
+          timelineIndicator.innerHTML = '<span class="text-rose-500">NO DATABASE SAMPLES LOGGED YET</span>';
+          return;
+        }
+
+        const chrono = [...rows].reverse();
+        const labels = [];
+        const aqiData = [];
+        const cogasData = [];
+        const dustData = [];
+        const tempData = [];
+
+        chrono.forEach(r => {
+          const d = new Date(r.created_at);
+          // Format as "01:25 AM" with full hour and minute precision
+          const timeLabel = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+          labels.push(timeLabel);
+          aqiData.push(r.aqi);
+          cogasData.push(r.co_gas);
+          dustData.push(Number(r.dust));
+          tempData.push(Number(r.temp));
+        });
+
+        chartGas.data.labels = labels;
+        chartGas.data.datasets[0].data = aqiData;
+        chartGas.data.datasets[1].data = cogasData;
+
+        chartDust.data.labels = labels;
+        chartDust.data.datasets[0].data = dustData;
+        chartDust.data.datasets[1].data = tempData;
+
+        updateGasZoom();
+        updateDustZoom();
+        chartGas.update();
+        chartDust.update();
+
+        timelineIndicator.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span><span>24-HOUR CONTINUOUS: ${chrono.length} TIME POINTS (EARLIEST: ${labels[0]} TO LATEST: ${labels[labels.length-1]})</span>`;
+      } catch (err) {
+        console.warn("24-hour timeline error:", err);
+        timelineIndicator.innerHTML = '<span class="text-rose-500">FAILED TO LOAD 24-HOUR TIMELINE</span>';
+      }
+    }
+
     let hasReceivedData = false;
 
     function appendChartTrace(timestamp, aqi, cogas, dust, temp) {
@@ -793,29 +992,45 @@
         }, 300);
       }
 
-      // Keep 120 points (~4 to 5 minutes history instead of disappearing in 60s)
+      // Always maintain the liveCache queue (up to 120 points)
       const maxPts = 120;
-      if (chartGas.data.labels.length >= maxPts) {
-        chartGas.data.labels.shift();
-        chartGas.data.datasets[0].data.shift();
-        chartGas.data.datasets[1].data.shift();
-        chartDust.data.labels.shift();
-        chartDust.data.datasets[0].data.shift();
-        chartDust.data.datasets[1].data.shift();
+      if (liveCache.labels.length >= maxPts) {
+        liveCache.labels.shift();
+        liveCache.aqi.shift();
+        liveCache.cogas.shift();
+        liveCache.dust.shift();
+        liveCache.temp.shift();
       }
-      chartGas.data.labels.push(timestamp);
-      chartGas.data.datasets[0].data.push(aqi);
-      chartGas.data.datasets[1].data.push(cogas);
+      liveCache.labels.push(timestamp);
+      liveCache.aqi.push(aqi);
+      liveCache.cogas.push(cogas);
+      liveCache.dust.push(dust);
+      liveCache.temp.push(temp);
 
-      chartDust.data.labels.push(timestamp);
-      chartDust.data.datasets[0].data.push(dust);
-      chartDust.data.datasets[1].data.push(temp);
+      // Only update chart elements directly if currently in LIVE stream mode
+      if (currentTimelineMode === 'live') {
+        if (chartGas.data.labels.length >= maxPts) {
+          chartGas.data.labels.shift();
+          chartGas.data.datasets[0].data.shift();
+          chartGas.data.datasets[1].data.shift();
+          chartDust.data.labels.shift();
+          chartDust.data.datasets[0].data.shift();
+          chartDust.data.datasets[1].data.shift();
+        }
+        chartGas.data.labels.push(timestamp);
+        chartGas.data.datasets[0].data.push(aqi);
+        chartGas.data.datasets[1].data.push(cogas);
 
-      updateGasZoom();
-      updateDustZoom();
+        chartDust.data.labels.push(timestamp);
+        chartDust.data.datasets[0].data.push(dust);
+        chartDust.data.datasets[1].data.push(temp);
 
-      chartGas.update();
-      chartDust.update();
+        updateGasZoom();
+        updateDustZoom();
+
+        chartGas.update();
+        chartDust.update();
+      }
     }
 
     // ========================================================================
