@@ -688,8 +688,6 @@
     // ========================================================================
     // 4. SUPABASE COLD-START INGESTION
     // ========================================================================
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     async function fetchSupabaseHistory() {
       const dot = document.getElementById('supabase-dot');
       const statusText = document.getElementById('supabase-status');
@@ -697,17 +695,18 @@
       statusText.innerText = 'FETCHING';
 
       try {
-        const { data, error } = await supabase
-          .from('telemetry')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(30);
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/telemetry?order=created_at.desc&limit=30`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
 
-        if (error) {
-          dot.className = 'w-2 h-2 rounded-full bg-amber-500';
-          statusText.innerText = 'READY';
-          return;
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
+
+        const data = await response.json();
 
         if (data && data.length > 0) {
           cachedRows = data;
@@ -737,6 +736,7 @@
           `;
         }
       } catch (err) {
+        console.warn("Supabase fetch fallback:", err);
         dot.className = 'w-2 h-2 rounded-full bg-rose-500';
         statusText.innerText = 'OFFLINE';
       }
@@ -850,11 +850,17 @@
       appendChartTrace(timeStr, 2350, 1850, 165.0, 31.0);
     });
 
-    // Boot Routine
-    document.addEventListener('DOMContentLoaded', async () => {
-      await fetchSupabaseHistory();
+    // Boot Routine: Immediate or DOM ready
+    function startStation() {
+      fetchSupabaseHistory();
       initializeMQTT();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startStation);
+    } else {
+      startStation();
+    }
   </script>
 </body>
 </html>
