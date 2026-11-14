@@ -103,10 +103,18 @@
         <button id="btn-audio" class="p-1.5 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Toggle Alarm Sound">
           <i id="audio-icon" class="fa-solid fa-volume-high text-xs w-4 text-center"></i>
         </button>
+
+        <!-- Browser Desktop Notification Toggle -->
+        <button id="btn-notify" class="p-1.5 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Enable Desktop Alert Notifications">
+          <i id="notify-icon" class="fa-regular fa-bell text-xs w-4 text-center"></i>
+        </button>
       </div>
 
     </div>
   </header>
+
+  <!-- Floating Toast Notification Container -->
+  <div id="toast-container" class="fixed top-16 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full"></div>
 
   <!-- Main Telemetry Body -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
@@ -448,6 +456,88 @@
       }
     });
 
+    // Browser Notification & Floating Toast Engine
+    let lastNotificationTime = 0;
+    const NOTIFICATION_COOLDOWN = 30000; // 30s cooldown between desktop popups
+
+    const btnNotify = document.getElementById('btn-notify');
+    const notifyIcon = document.getElementById('notify-icon');
+
+    function updateNotifyButton() {
+      if (!('Notification' in window)) {
+        if (btnNotify) btnNotify.style.display = 'none';
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        notifyIcon.className = 'fa-solid fa-bell text-emerald-600 text-xs w-4 text-center';
+        btnNotify.title = 'Desktop Notifications Enabled';
+      } else if (Notification.permission === 'denied') {
+        notifyIcon.className = 'fa-solid fa-bell-slash text-rose-500 text-xs w-4 text-center';
+        btnNotify.title = 'Desktop Notifications Blocked in Browser';
+      } else {
+        notifyIcon.className = 'fa-regular fa-bell text-slate-500 text-xs w-4 text-center';
+        btnNotify.title = 'Click to Enable Desktop Notifications';
+      }
+    }
+
+    if (btnNotify) {
+      updateNotifyButton();
+      btnNotify.addEventListener('click', async () => {
+        if ('Notification' in window) {
+          const perm = await Notification.requestPermission();
+          updateNotifyButton();
+          if (perm === 'granted') {
+            showToastAlert('Notifications Enabled', 'You will receive instant alerts when hazardous gas or smoke is detected.', 'bg-emerald-600 border-emerald-700');
+            try {
+              new Notification('AirGuard IoT: Notifications Enabled', {
+                body: 'Active monitoring armed. You will receive alerts when thresholds are exceeded.',
+                icon: 'https://cdn-icons-png.flaticon.com/512/564/564619.png'
+              });
+            } catch (e) {}
+          }
+        }
+      });
+    }
+
+    function sendDesktopNotification(title, body) {
+      const now = Date.now();
+      showToastAlert(title, body, 'bg-rose-600 border-rose-700 animate-bounce');
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        if (now - lastNotificationTime >= NOTIFICATION_COOLDOWN) {
+          lastNotificationTime = now;
+          try {
+            new Notification(title, {
+              body: body,
+              icon: 'https://cdn-icons-png.flaticon.com/512/564/564619.png',
+              tag: 'airguard-hazard-alert'
+            });
+          } catch (e) {
+            console.warn("Notification error:", e);
+          }
+        }
+      }
+    }
+
+    function showToastAlert(title, body, colorClass = 'bg-rose-600 border-rose-700') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto text-white p-3.5 rounded-lg shadow-2xl border flex items-start space-x-3 transition-all duration-300 transform translate-x-0 ${colorClass}`;
+      toast.innerHTML = `
+        <div class="mt-0.5"><i class="fa-solid fa-triangle-exclamation text-base"></i></div>
+        <div class="flex-1 text-xs">
+          <div class="font-bold tracking-tight uppercase">${title}</div>
+          <div class="mt-0.5 opacity-90 leading-relaxed">${body}</div>
+        </div>
+        <button class="opacity-70 hover:opacity-100 text-sm font-bold ml-2" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentElement) toast.remove();
+      }, 7000);
+    }
+
     // ========================================================================
     // 2. CHART.JS CONFIGURATION — VISIBLE OSCILLOSCOPE GRIDS EVEN WHEN EMPTY
     // ========================================================================
@@ -668,6 +758,7 @@
         sDesc.className = 'text-xs text-rose-700 font-medium';
         sDesc.innerText = 'Contaminants exceed life-safety threshold. Evacuate room and inspect ventilation immediately.';
         triggerAudioAlert();
+        sendDesktopNotification('🚨 Critical Gas Hazard Detected!', `Hazard levels exceeded! MQ-9: ${data.co_gas} | MQ-135: ${data.aqi}. Please evacuate and ventilate.`);
       } else if (isWarning) {
         strip.className = 'p-3.5 rounded border border-amber-300 bg-amber-50 flex items-center justify-between transition-colors';
         pill.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0';
