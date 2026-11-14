@@ -46,17 +46,18 @@
 
   <style>
     body {
-      background-color: #f8fafc;
+      background-color: #f1f5f9;
       color: #0f172a;
       -webkit-font-smoothing: antialiased;
     }
     .card-shell {
       background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+      border-radius: 0.5rem;
     }
     .bar-track {
-      background-color: #f1f5f9;
+      background-color: #e2e8f0;
     }
     .bar-indicator {
       transition: width 0.35s ease, background-color 0.35s ease;
@@ -73,54 +74,54 @@
 <body class="min-h-screen text-[13px] selection:bg-slate-900 selection:text-white pb-12">
 
   <!-- Top Navigation & System Health Header -->
-  <header class="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-50">
+  <header class="border-b border-slate-300 bg-white/98 backdrop-blur sticky top-0 z-50 shadow-2xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
       
       <!-- System Identification -->
       <div class="flex items-center space-x-3">
-        <div class="w-7 h-7 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider">
+        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs tracking-wider shadow-sm">
           AG
         </div>
         <div class="flex items-center space-x-2">
-          <span class="font-bold text-sm tracking-tight text-slate-900">AirGuard IoT</span>
-          <span class="text-slate-300">/</span>
-          <span class="font-mono text-xs text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">ESP32-S3</span>
-          <span class="font-mono text-xs text-slate-500 hidden sm:inline">UITS CSE402</span>
+          <span class="font-extrabold text-base tracking-tight text-slate-900">AirGuard IoT</span>
+          <span class="text-slate-400">/</span>
+          <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">ESP32-S3</span>
+          <span class="font-mono text-xs text-slate-600 font-semibold hidden sm:inline">UITS CSE402</span>
         </div>
       </div>
 
       <!-- Live Connectivity Telemetry Badges -->
-      <div class="flex items-center space-x-3 font-mono text-[11px]">
+      <div class="flex items-center space-x-2.5 font-mono text-[11px]">
         <!-- MQTT Status -->
-        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+        <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-300 font-medium">
           <span id="mqtt-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-          <span class="text-slate-500">MQTT:</span>
-          <span id="mqtt-status" class="text-slate-900 font-semibold">CONNECTING</span>
+          <span class="text-slate-600 font-bold">MQTT:</span>
+          <span id="mqtt-status" class="text-slate-900 font-extrabold">CONNECTING</span>
         </div>
 
         <!-- Supabase Status -->
-        <div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+        <div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-300 font-medium">
           <span id="supabase-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-          <span class="text-slate-500">DB:</span>
-          <span id="supabase-status" class="text-slate-900 font-semibold">SYNCING</span>
+          <span class="text-slate-600 font-bold">DB:</span>
+          <span id="supabase-status" class="text-slate-900 font-extrabold">SYNCING</span>
         </div>
 
         <!-- Packet Counter -->
-        <div class="hidden md:flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-600">
-          <span>PACKETS:</span>
-          <span id="packet-counter" class="text-slate-900 font-semibold">0</span>
+        <div class="hidden md:flex items-center space-x-1 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-300 text-slate-700 font-medium">
+          <span class="font-bold text-slate-600">PKTS:</span>
+          <span id="packet-counter" class="text-slate-900 font-black">0</span>
         </div>
 
         <!-- System Clock -->
-        <div class="hidden lg:inline text-slate-500 font-mono text-[11px]" id="system-clock">00:00:00 UTC</div>
+        <div class="hidden lg:inline text-slate-700 font-mono text-[11px] font-bold bg-slate-100 px-2.5 py-1 rounded-md border border-slate-300" id="system-clock">00:00:00 UTC</div>
 
         <!-- Audio Siren Mute Toggle -->
-        <button id="btn-audio" class="p-1.5 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Toggle Alarm Sound">
+        <button id="btn-audio" class="p-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition shadow-2xs cursor-pointer" title="Toggle Alarm Sound">
           <i id="audio-icon" class="fa-solid fa-volume-high text-xs w-4 text-center"></i>
         </button>
 
         <!-- Browser Desktop Notification Toggle -->
-        <button id="btn-notify" class="p-1.5 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Enable Desktop Alert Notifications">
+        <button id="btn-notify" class="p-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition shadow-2xs cursor-pointer" title="Enable Desktop Alert Notifications">
           <i id="notify-icon" class="fa-regular fa-bell text-xs w-4 text-center"></i>
         </button>
       </div>
@@ -132,224 +133,252 @@
   <div id="toast-container" class="fixed top-16 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full"></div>
 
   <!-- Main Telemetry Body -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 space-y-4">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
 
-    <!-- Global Hazard Status Strip -->
-    <section id="safety-strip" class="p-3.5 rounded card-shell flex flex-wrap items-center justify-between gap-3 transition-colors">
-      <div class="flex items-center space-x-3">
-        <span id="status-pill" class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-        <div>
-          <div class="flex items-center space-x-2">
-            <span id="safety-title" class="font-bold text-xs tracking-tight text-slate-900 uppercase">SYSTEM NOMINAL — ISO/OSHA COMPLIANT</span>
-            <span class="text-slate-300">|</span>
-            <span id="safety-desc" class="text-xs text-slate-600">All atmospheric gas, combustible vapor, dust particulate, and thermal levels are within permissible safety limits.</span>
-          </div>
-        </div>
-      </div>
-      <div class="text-right font-mono text-[11px] text-slate-500 shrink-0 hidden md:block">
-        LAST PACKET: <span id="last-timestamp" class="text-slate-800 font-medium">WAITING FOR SENSOR DATA</span>
-      </div>
-    </section>
+    <!-- Global Hazard Status (Hidden in normal view per user specification, maintains test and JS IDs) -->
+    <div id="safety-strip" class="hidden" aria-hidden="true">
+      <span id="status-pill"></span>
+      <span id="safety-title"></span>
+      <span id="safety-desc"></span>
+    </div>
 
     <!-- High-Density Instrument Metric Cards (Active + Future Work Phase 2) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
 
       <!-- Channel 1: MQ-135 Air Quality (Active) -->
-      <div class="p-4 rounded card-shell flex flex-col justify-between">
+      <div class="p-4 sm:p-5 rounded-lg card-shell flex flex-col justify-between h-full">
         <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Air Quality</span>
-            <span class="font-mono text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded font-bold">ACTIVE</span>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Air Quality</span>
+            <span class="font-mono text-[10px] text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded font-extrabold shadow-2xs">ACTIVE</span>
           </div>
           <div class="flex items-baseline space-x-2 my-2">
-            <span id="val-aqi" class="text-3xl font-extrabold font-mono text-slate-900 tracking-tight">--</span>
-            <span class="text-xs text-slate-400 font-mono font-medium">counts</span>
+            <span id="val-aqi" class="text-3xl font-black font-mono text-slate-900 tracking-tight">--</span>
+            <span class="text-xs text-slate-600 font-mono font-bold">counts</span>
             <span class="text-slate-300">|</span>
-            <span id="val-aqi-ppm" class="text-xs font-bold font-mono text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">-- PPM</span>
+            <span id="val-aqi-ppm" class="text-xs font-black font-mono text-sky-900 bg-sky-100 px-2 py-0.5 rounded border border-sky-300">-- PPM</span>
           </div>
 
           <!-- Gas Decomposition Grid for MQ-135 -->
-          <div class="grid grid-cols-2 gap-1.5 my-2">
-            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
-              <span class="text-[9px] font-mono text-slate-500 uppercase block">CO₂ (Carbon Dioxide)</span>
+          <div class="grid grid-cols-2 gap-2 my-2.5">
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">CO₂ (Carbon Dioxide)</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-co2-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
-                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+                <span id="val-co2-ppm" class="text-sm font-black font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">PPM</span>
               </div>
-              <span id="tag-co2" class="text-[9px] font-semibold text-emerald-600 block truncate">400–800 Normal</span>
+              <span id="tag-co2" class="text-[9px] font-extrabold text-emerald-700 block truncate">400–800 Normal</span>
             </div>
-            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
-              <span class="text-[9px] font-mono text-slate-500 uppercase block">NH₃ (Ammonia)</span>
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">NH₃ (Ammonia)</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-nh3-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
-                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+                <span id="val-nh3-ppm" class="text-sm font-black font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">PPM</span>
               </div>
-              <span id="tag-nh3" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;1.0 Clean</span>
+              <span id="tag-nh3" class="text-[9px] font-extrabold text-emerald-700 block truncate">&lt;1.0 Clean</span>
             </div>
           </div>
         </div>
 
-        <div class="space-y-2 pt-2 border-t border-slate-100">
-          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
+        <div class="space-y-2 pt-2.5 border-t border-slate-200 mt-2">
+          <div class="w-full h-2 rounded-full bar-track overflow-hidden">
             <div id="bar-aqi" class="bar-indicator h-full bg-emerald-500" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+          <div class="flex justify-between font-mono text-[10px] text-slate-600 font-medium">
             <span>Range: &lt;1200 safe</span>
-            <span id="ch1-status" class="text-emerald-600 font-bold uppercase">NORMAL</span>
+            <span id="ch1-status" class="text-emerald-700 font-extrabold uppercase">NORMAL</span>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500 pt-1 border-t border-slate-100">
             <span>Target: CO₂, NH₃, Smoke</span>
-            <span>Session: <span id="ch1-range" class="text-slate-600 font-medium">-- / --</span></span>
+            <span>Session: <span id="ch1-range" class="text-slate-800 font-bold">-- / --</span></span>
           </div>
         </div>
       </div>
 
       <!-- Channel 2: MQ-9 Carbon Monoxide & Gas (Active) -->
-      <div class="p-4 rounded card-shell flex flex-col justify-between">
+      <div class="p-4 sm:p-5 rounded-lg card-shell flex flex-col justify-between h-full">
         <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">CO & Gas</span>
-            <span class="font-mono text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded font-bold">ACTIVE</span>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">CO & Gas</span>
+            <span class="font-mono text-[10px] text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded font-extrabold shadow-2xs">ACTIVE</span>
           </div>
           <div class="flex items-baseline space-x-2 my-2">
-            <span id="val-cogas" class="text-3xl font-extrabold font-mono text-slate-900 tracking-tight">--</span>
-            <span class="text-xs text-slate-400 font-mono font-medium">counts</span>
+            <span id="val-cogas" class="text-3xl font-black font-mono text-slate-900 tracking-tight">--</span>
+            <span class="text-xs text-slate-600 font-mono font-bold">counts</span>
             <span class="text-slate-300">|</span>
-            <span id="val-cogas-ppm" class="text-xs font-bold font-mono text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">-- PPM</span>
+            <span id="val-cogas-ppm" class="text-xs font-black font-mono text-rose-900 bg-rose-100 px-2 py-0.5 rounded border border-rose-300">-- PPM</span>
           </div>
 
           <!-- Gas Decomposition Grid for MQ-9 -->
-          <div class="grid grid-cols-2 gap-1.5 my-2">
-            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
-              <span class="text-[9px] font-mono text-slate-500 uppercase block">CO (Carbon Monoxide)</span>
+          <div class="grid grid-cols-2 gap-2 my-2.5">
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">CO (Carbon Monoxide)</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-co-ppm-detail" class="text-sm font-bold font-mono text-slate-900">--</span>
-                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+                <span id="val-co-ppm-detail" class="text-sm font-black font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">PPM</span>
               </div>
-              <span id="tag-co" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;5.0 Safe</span>
+              <span id="tag-co" class="text-[9px] font-extrabold text-emerald-700 block truncate">&lt;5.0 Safe</span>
             </div>
-            <div class="bg-slate-50 p-1.5 rounded border border-slate-100">
-              <span class="text-[9px] font-mono text-slate-500 uppercase block">CH₄ / LPG Gas</span>
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">CH₄ / LPG Gas</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-combustible-ppm" class="text-sm font-bold font-mono text-slate-900">--</span>
-                <span class="text-[9px] text-slate-400 font-mono">PPM</span>
+                <span id="val-combustible-ppm" class="text-sm font-black font-mono text-slate-900">--</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">PPM</span>
               </div>
-              <span id="tag-combustible" class="text-[9px] font-semibold text-emerald-600 block truncate">&lt;200 Trace</span>
+              <span id="tag-combustible" class="text-[9px] font-extrabold text-emerald-700 block truncate">&lt;200 Trace</span>
             </div>
           </div>
         </div>
 
-        <div class="space-y-2 pt-2 border-t border-slate-100">
-          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
+        <div class="space-y-2 pt-2.5 border-t border-slate-200 mt-2">
+          <div class="w-full h-2 rounded-full bar-track overflow-hidden">
             <div id="bar-cogas" class="bar-indicator h-full bg-emerald-500" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+          <div class="flex justify-between font-mono text-[10px] text-slate-600 font-medium">
             <span>Range: &lt;1000 safe</span>
-            <span id="ch2-status" class="text-emerald-600 font-bold uppercase">NORMAL</span>
+            <span id="ch2-status" class="text-emerald-700 font-extrabold uppercase">NORMAL</span>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500 pt-1 border-t border-slate-100">
             <span>Target: CO, CH₄, LPG</span>
-            <span>Session: <span id="ch2-range" class="text-slate-600 font-medium">-- / --</span></span>
+            <span>Session: <span id="ch2-range" class="text-slate-800 font-bold">-- / --</span></span>
           </div>
         </div>
       </div>
 
       <!-- Channel 3: Climate DHT11 / Cloud Ingestion -->
-      <div class="p-4 rounded card-shell flex flex-col justify-between">
+      <div class="p-4 sm:p-5 rounded-lg card-shell flex flex-col justify-between h-full">
         <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ambient Climate</span>
-            <span id="climate-badge" class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded">DHT11 // LIVE SYNC</span>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Ambient Climate</span>
+            <span id="climate-badge" class="font-mono text-[10px] text-sky-900 bg-sky-100 border border-sky-300 px-2 py-0.5 rounded font-extrabold shadow-2xs">LIVE SYNC</span>
           </div>
           
-          <div class="grid grid-cols-2 gap-2 my-2">
-            <div class="bg-slate-50 p-2 rounded border border-slate-100">
-              <span class="text-[10px] font-mono text-slate-500 uppercase block">Temp</span>
+          <div class="grid grid-cols-2 gap-2 my-2.5">
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Temp</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-temp" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-                <span class="text-xs text-slate-400 font-mono">°C</span>
+                <span id="val-temp" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+                <span class="text-xs text-slate-500 font-mono font-bold">°C</span>
               </div>
             </div>
-            <div class="bg-slate-50 p-2 rounded border border-slate-100">
-              <span class="text-[10px] font-mono text-slate-500 uppercase block">Humidity</span>
+            <div class="bg-slate-50/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Humidity</span>
               <div class="flex items-baseline space-x-1 mt-0.5">
-                <span id="val-hum" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-                <span class="text-xs text-slate-400 font-mono">%</span>
+                <span id="val-hum" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+                <span class="text-xs text-slate-500 font-mono font-bold">%</span>
               </div>
             </div>
           </div>
 
           <!-- Weather Condition quick badge -->
-          <div class="flex items-center justify-between font-mono text-[9px] bg-sky-50 text-sky-800 px-2 py-1 rounded border border-sky-100 my-1">
-            <span class="flex items-center gap-1"><span id="ch3-weather-icon">☀️</span> <span id="ch3-weather-condition" class="font-semibold">Dhaka: Syncing...</span></span>
-            <span id="ch3-wind-pill" class="text-slate-600 font-medium">-- km/h</span>
+          <div class="flex items-center justify-between font-mono text-[9px] bg-sky-50 text-sky-900 px-2 py-1 rounded border border-sky-200 my-1 font-semibold">
+            <span class="flex items-center gap-1"><span id="ch3-weather-icon">☀️</span> <span id="ch3-weather-condition" class="font-bold">Dhaka: Syncing...</span></span>
+            <span id="ch3-wind-pill" class="text-slate-700 font-bold">-- km/h</span>
           </div>
         </div>
 
-        <div class="pt-2 border-t border-slate-100 space-y-1">
-          <div class="flex justify-between font-mono text-[10px] text-slate-500">
-            <span>Dew Point: <span id="val-dew" class="text-slate-800 font-semibold">--.- °C</span></span>
-            <span>Feels: <span id="val-feels-like" class="text-slate-700 font-medium">--.-</span>°C</span>
+        <div class="pt-2.5 border-t border-slate-200 space-y-1 mt-2">
+          <div class="flex justify-between font-mono text-[10px] text-slate-600 font-medium">
+            <span>Dew Pt: <span id="val-dew" class="text-slate-900 font-bold">--.- °C</span></span>
+            <span>Feels: <span id="val-feels-like" class="text-slate-800 font-bold">--.-</span>°C</span>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-100/60">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500 pt-1 border-t border-slate-100">
             <span>Air Dispersion:</span>
-            <span id="ch3-dispersion-badge" class="text-emerald-600 font-medium">Nominal Airflow</span>
+            <span id="ch3-dispersion-badge" class="text-emerald-700 font-extrabold">Nominal Airflow</span>
           </div>
         </div>
       </div>
 
       <!-- Channel 4: Optical Dust GP2Y1010AU0F (Future Work) -->
-      <div class="p-4 rounded card-shell flex flex-col justify-between bg-slate-50/60 border border-dashed border-slate-300">
+      <div class="p-4 sm:p-5 rounded-lg card-shell flex flex-col justify-between h-full bg-slate-50/80 border border-dashed border-slate-400">
         <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Suspended Dust</span>
-            <span class="font-mono text-[9px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded font-bold uppercase">FUTURE WORK</span>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Suspended Dust</span>
+            <span class="font-mono text-[9px] text-indigo-900 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded font-extrabold uppercase shadow-2xs">FUTURE WORK</span>
           </div>
           <div class="flex items-baseline space-x-2 my-2">
-            <span id="val-dust" class="text-3xl font-extrabold font-mono text-slate-400 tracking-tight">--</span>
-            <span class="text-xs text-slate-400 font-mono font-medium">µg/m³</span>
+            <span id="val-dust" class="text-3xl font-black font-mono text-slate-400 tracking-tight">--</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">µg/m³</span>
+          </div>
+
+          <!-- Matching Structural Breakdown Grid for Dust -->
+          <div class="grid grid-cols-2 gap-2 my-2.5">
+            <div class="bg-white/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">Particulate</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span class="text-sm font-black font-mono text-slate-700">PM2.5 / 10</span>
+              </div>
+              <span class="text-[9px] font-extrabold text-indigo-700 block truncate">Optical Scatter</span>
+            </div>
+            <div class="bg-white/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">WHO Target</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span class="text-sm font-black font-mono text-slate-700">&lt;15.0</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">µg/m³</span>
+              </div>
+              <span class="text-[9px] font-extrabold text-emerald-700 block truncate">Guideline Norm</span>
+            </div>
           </div>
         </div>
 
-        <div class="space-y-2 pt-2 border-t border-slate-200/80">
-          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
-            <div id="bar-dust" class="bar-indicator h-full bg-slate-300" style="width: 0%;"></div>
+        <div class="space-y-2 pt-2.5 border-t border-slate-200 mt-2">
+          <div class="w-full h-2 rounded-full bar-track overflow-hidden">
+            <div id="bar-dust" class="bar-indicator h-full bg-slate-400" style="width: 0%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+          <div class="flex justify-between font-mono text-[10px] text-slate-600 font-medium">
             <span>GP2Y1010 (PM2.5)</span>
-            <span id="ch3-status" class="text-indigo-600 font-bold uppercase">RESERVED (PHASE 2)</span>
+            <span id="ch3-status" class="text-indigo-800 font-extrabold uppercase">RESERVED (PHASE 2)</span>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-200/60">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500 pt-1 border-t border-slate-200">
             <span>Interface: GPIO 4 / 6</span>
-            <span>Session: <span id="ch3-range" class="text-slate-500 font-medium">Phase 2</span></span>
+            <span>Session: <span id="ch3-range" class="text-slate-700 font-bold">Phase 2</span></span>
           </div>
         </div>
       </div>
 
       <!-- Channel 5: Oxygen Concentration ME2-O2 (Future Work) -->
-      <div class="p-4 rounded card-shell flex flex-col justify-between bg-slate-50/60 border border-dashed border-slate-300">
+      <div class="p-4 sm:p-5 rounded-lg card-shell flex flex-col justify-between h-full bg-slate-50/80 border border-dashed border-slate-400">
         <div>
-          <div class="flex justify-between items-baseline mb-1">
-            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Oxygen Level (O₂)</span>
-            <span class="font-mono text-[9px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded font-bold uppercase">FUTURE WORK</span>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Oxygen Level (O₂)</span>
+            <span class="font-mono text-[9px] text-indigo-900 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded font-extrabold uppercase shadow-2xs">FUTURE WORK</span>
           </div>
           <div class="flex items-baseline space-x-2 my-2">
-            <span id="val-o2" class="text-3xl font-extrabold font-mono text-slate-400 tracking-tight">20.9</span>
-            <span class="text-xs text-slate-400 font-mono font-medium">% Vol</span>
+            <span id="val-o2" class="text-3xl font-black font-mono text-slate-400 tracking-tight">20.9</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">% Vol</span>
+          </div>
+
+          <!-- Matching Structural Breakdown Grid for Oxygen -->
+          <div class="grid grid-cols-2 gap-2 my-2.5">
+            <div class="bg-white/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">Atmospheric</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span class="text-sm font-black font-mono text-slate-700">20.9%</span>
+                <span class="text-[9px] text-slate-500 font-mono font-bold">Vol</span>
+              </div>
+              <span class="text-[9px] font-extrabold text-emerald-700 block truncate">Sea-Level Norm</span>
+            </div>
+            <div class="bg-white/90 p-2 rounded-md border border-slate-200 shadow-2xs">
+              <span class="text-[9px] font-mono text-slate-600 font-bold uppercase block">OSHA Band</span>
+              <div class="flex items-baseline space-x-1 mt-0.5">
+                <span class="text-sm font-black font-mono text-slate-700">19.5–23.5%</span>
+              </div>
+              <span class="text-[9px] font-extrabold text-indigo-700 block truncate">Mandate Band</span>
+            </div>
           </div>
         </div>
 
-        <div class="space-y-2 pt-2 border-t border-slate-200/80">
-          <div class="w-full h-1.5 rounded-full bar-track overflow-hidden">
-            <div id="bar-o2" class="bar-indicator h-full bg-slate-300" style="width: 87%;"></div>
+        <div class="space-y-2 pt-2.5 border-t border-slate-200 mt-2">
+          <div class="w-full h-2 rounded-full bar-track overflow-hidden">
+            <div id="bar-o2" class="bar-indicator h-full bg-slate-400" style="width: 87%;"></div>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-500">
+          <div class="flex justify-between font-mono text-[10px] text-slate-600 font-medium">
             <span>ME2-O2 (Electrochemical)</span>
-            <span class="text-indigo-600 font-bold uppercase">RESERVED (PHASE 2)</span>
+            <span class="text-indigo-800 font-extrabold uppercase">RESERVED (PHASE 2)</span>
           </div>
-          <div class="flex justify-between font-mono text-[10px] text-slate-400 pt-1 border-t border-slate-200/60">
+          <div class="flex justify-between font-mono text-[10px] text-slate-500 pt-1 border-t border-slate-200">
             <span>Interface: GPIO 5 (ADC1)</span>
-            <span class="text-slate-500 font-medium">19.5%–23.5% OSHA</span>
+            <span class="text-slate-700 font-bold">19.5%–23.5% OSHA</span>
           </div>
         </div>
       </div>
@@ -357,177 +386,181 @@
     </div>
 
     <!-- Time Horizon & Point-of-Day History Filter Toolbar -->
-    <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded card-shell">
-      <div class="flex items-center space-x-2">
-        <span class="text-xs font-bold text-slate-700 uppercase tracking-tight flex items-center">
-          <i class="fa-solid fa-clock-rotate-left mr-1.5 text-slate-400"></i> TIMELINE VIEW:
+    <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg card-shell">
+      <div class="flex items-center space-x-2.5">
+        <span class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5 text-slate-500"></i> TIMELINE VIEW:
         </span>
-        <div class="flex items-center space-x-1 font-mono text-[11px]">
-          <button id="btn-mode-live" class="px-2.5 py-1 rounded font-semibold transition bg-slate-900 text-white shadow-sm">
+        <div class="flex items-center space-x-1.5 font-mono text-[11px]">
+          <button id="btn-mode-live" class="px-3 py-1.5 rounded-md font-bold transition bg-slate-900 text-white shadow-sm hover:bg-slate-800 cursor-pointer">
             ⚡ LIVE STREAM
           </button>
-          <button id="btn-mode-hourly" class="px-2.5 py-1 rounded font-medium transition bg-slate-100 hover:bg-slate-200 text-slate-700">
+          <button id="btn-mode-hourly" class="px-3 py-1.5 rounded-md font-semibold transition bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 cursor-pointer">
             📊 HOURLY BREAKDOWN
           </button>
-          <button id="btn-mode-24h" class="px-2.5 py-1 rounded font-medium transition bg-slate-100 hover:bg-slate-200 text-slate-700">
+          <button id="btn-mode-24h" class="px-3 py-1.5 rounded-md font-semibold transition bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 cursor-pointer">
             📅 24-HOUR DAY TIMELINE
           </button>
         </div>
       </div>
-      <div class="text-[11px] font-mono text-slate-500 flex items-center space-x-2">
-        <span id="timeline-indicator" class="flex items-center space-x-1.5">
+      <div class="text-[11px] font-mono text-slate-600 flex items-center space-x-3">
+        <span id="timeline-indicator" class="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>MODE: REAL-TIME (2S REFRESH)</span>
+        </span>
+        <span class="hidden sm:flex items-center space-x-1 text-slate-600 font-semibold">
+          <span>LAST PKT:</span>
+          <span id="last-timestamp" class="text-slate-900 font-black">WAITING FOR SENSOR DATA</span>
         </span>
       </div>
     </div>
 
     <!-- Live Meteorological Station & Atmospheric Microclimate (Dhaka, Bangladesh) -->
-    <div class="p-4 rounded card-shell bg-gradient-to-r from-white via-sky-50/30 to-indigo-50/20 border border-sky-100 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center space-x-2.5">
-          <div class="w-9 h-9 rounded-lg bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-600 text-lg shadow-xs">
+    <div class="p-4 sm:p-5 rounded-lg card-shell bg-gradient-to-r from-white via-sky-50/25 to-slate-50 border border-slate-300 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2.5 border-b border-slate-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-700 text-xl shadow-2xs">
             <i id="weather-station-icon" class="fa-solid fa-cloud-sun"></i>
           </div>
           <div>
             <div class="flex items-center space-x-2">
-              <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">Dhaka Meteorological & Microclimate Station</span>
-              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> OPEN-METEO LIVE
+              <span class="font-black text-xs text-slate-900 uppercase tracking-wider">Dhaka Meteorological & Microclimate Station</span>
+              <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 font-black flex items-center gap-1 shadow-2xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span> OPEN-METEO LIVE
               </span>
             </div>
-            <span class="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
-              <i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i> Dhaka, Bangladesh • UITS Campus Microclimate Area (23.81°N, 90.41°E)
+            <span class="text-[11px] text-slate-600 font-mono font-medium flex items-center gap-1.5 mt-0.5">
+              <i class="fa-solid fa-location-dot text-rose-600 text-[10px]"></i> Dhaka, Bangladesh • UITS Campus Microclimate Area (23.81°N, 90.41°E)
             </span>
           </div>
         </div>
 
-        <div class="flex items-center space-x-2 text-[11px] font-mono">
-          <span id="weather-last-updated" class="text-slate-400 text-[10px]">Synced: --:--:--</span>
-          <button id="btn-refresh-weather" onclick="fetchInternetWeather()" class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-mono transition flex items-center gap-1 shadow-xs font-semibold cursor-pointer">
+        <div class="flex items-center space-x-2.5 text-[11px] font-mono">
+          <span id="weather-last-updated" class="text-slate-500 font-semibold text-[10px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Synced: --:--:--</span>
+          <button id="btn-refresh-weather" onclick="fetchInternetWeather()" class="px-3 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-[11px] font-mono transition flex items-center gap-1 shadow-2xs font-bold cursor-pointer">
             <i class="fa-solid fa-arrows-rotate text-[10px] text-sky-600"></i> UPDATE WEATHER
           </button>
         </div>
       </div>
 
       <!-- Current Meteorological Readings Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
         <!-- 1. Condition & Ambient Temp -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Condition & Temp</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Condition & Temp</span>
           <div class="flex items-baseline space-x-1.5 mt-1">
             <span id="wx-current-icon" class="text-xl">☀️</span>
-            <span id="wx-temp" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-            <span class="text-xs text-slate-400 font-mono">°C</span>
+            <span id="wx-temp" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">°C</span>
           </div>
-          <span id="wx-desc" class="text-[10px] font-semibold text-sky-700 block mt-0.5 truncate">Syncing...</span>
+          <span id="wx-desc" class="text-[10px] font-bold text-sky-800 block mt-0.5 truncate">Syncing...</span>
         </div>
 
         <!-- 2. Apparent / Feels Like -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Feels Like</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Feels Like</span>
           <div class="flex items-baseline space-x-1 mt-1">
-            <span id="wx-feels" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-            <span class="text-xs text-slate-400 font-mono">°C</span>
+            <span id="wx-feels" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">°C</span>
           </div>
-          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono">Apparent Thermal</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono font-medium">Apparent Thermal</span>
         </div>
 
         <!-- 3. Relative Humidity & Dew Point -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Relative Humidity</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Relative Humidity</span>
           <div class="flex items-baseline space-x-1 mt-1">
-            <span id="wx-hum" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-            <span class="text-xs text-slate-400 font-mono">%</span>
+            <span id="wx-hum" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">%</span>
           </div>
-          <span id="wx-dew-label" class="text-[10px] text-slate-500 block mt-0.5 font-mono">Dew Pt: --.-°C</span>
+          <span id="wx-dew-label" class="text-[10px] text-slate-600 block mt-0.5 font-mono font-medium">Dew Pt: --.-°C</span>
         </div>
 
         <!-- 4. Surface Wind Speed & Direction -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Surface Wind</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Surface Wind</span>
           <div class="flex items-baseline space-x-1 mt-1">
-            <span id="wx-wind" class="text-2xl font-bold font-mono text-slate-900">--.-</span>
-            <span class="text-xs text-slate-400 font-mono">km/h</span>
+            <span id="wx-wind" class="text-2xl font-black font-mono text-slate-900">--.-</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">km/h</span>
           </div>
-          <span id="wx-wind-dir" class="text-[10px] text-slate-600 block mt-0.5 font-mono">Dir: -- (--)</span>
+          <span id="wx-wind-dir" class="text-[10px] text-slate-700 block mt-0.5 font-mono font-bold">Dir: -- (--)</span>
         </div>
 
         <!-- 5. Barometric Pressure -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Barometer</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Barometer</span>
           <div class="flex items-baseline space-x-1 mt-1">
-            <span id="wx-pressure" class="text-2xl font-bold font-mono text-slate-900">----</span>
-            <span class="text-xs text-slate-400 font-mono">hPa</span>
+            <span id="wx-pressure" class="text-2xl font-black font-mono text-slate-900">----</span>
+            <span class="text-xs text-slate-500 font-mono font-bold">hPa</span>
           </div>
-          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono">Surface Atmos</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5 font-mono font-medium">Surface Atmos</span>
         </div>
 
         <!-- 6. Gas Dispersion Safety Correlation -->
-        <div class="bg-white/90 p-2.5 rounded border border-slate-200 shadow-xs">
-          <span class="text-[10px] font-mono text-slate-500 uppercase block">Gas Dispersion</span>
+        <div class="bg-slate-50/90 p-3 rounded-lg border border-slate-200 shadow-2xs">
+          <span class="text-[10px] font-mono text-slate-600 font-bold uppercase block">Gas Dispersion</span>
           <div class="flex items-center space-x-1 mt-1">
-            <span id="wx-dispersion-badge" class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">MODERATE</span>
+            <span id="wx-dispersion-badge" class="text-[10px] font-black font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 truncate shadow-2xs">MODERATE</span>
           </div>
-          <span id="wx-dispersion-desc" class="text-[9px] text-slate-500 block mt-1 font-mono truncate">Ventilation: Stable</span>
+          <span id="wx-dispersion-desc" class="text-[9px] text-slate-600 block mt-1 font-mono font-medium truncate">Ventilation: Stable</span>
         </div>
       </div>
 
       <!-- 3-Day Micro-Forecast Strip -->
-      <div class="pt-2 border-t border-slate-100/80">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <i class="fa-solid fa-calendar-days text-slate-400"></i> 3-DAY DHAKA ATMOSPHERIC FORECAST
+      <div class="pt-2.5 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono font-black text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-slate-500"></i> 3-DAY DHAKA ATMOSPHERIC FORECAST
           </span>
-          <span class="text-[9px] font-mono text-slate-400">Updates hourly via WMO Station Model</span>
+          <span class="text-[9px] font-mono text-slate-500 font-medium">Updates hourly via WMO Station Model</span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
-            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-0">Today</span></span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-white/90 border border-slate-200 font-mono text-[11px] shadow-2xs">
+            <span class="font-extrabold text-slate-800 flex items-center gap-1.5"><span id="fc-day-0">Today</span></span>
             <span id="fc-icon-0" class="text-base">☀️</span>
-            <span class="text-slate-600"><span id="fc-max-0" class="font-bold text-slate-800">--°</span> / <span id="fc-min-0" class="text-slate-400">--°</span></span>
-            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-0">0%</span></span>
+            <span class="text-slate-700 font-bold"><span id="fc-max-0" class="font-black text-slate-900">--°</span> / <span id="fc-min-0" class="text-slate-500">--°</span></span>
+            <span class="text-[10px] text-sky-800 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200"><i class="fa-solid fa-umbrella text-[9px] mr-1"></i><span id="fc-rain-0">0%</span></span>
           </div>
 
-          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
-            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-1">Tomorrow</span></span>
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-white/90 border border-slate-200 font-mono text-[11px] shadow-2xs">
+            <span class="font-extrabold text-slate-800 flex items-center gap-1.5"><span id="fc-day-1">Tomorrow</span></span>
             <span id="fc-icon-1" class="text-base">⛅</span>
-            <span class="text-slate-600"><span id="fc-max-1" class="font-bold text-slate-800">--°</span> / <span id="fc-min-1" class="text-slate-400">--°</span></span>
-            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-1">0%</span></span>
+            <span class="text-slate-700 font-bold"><span id="fc-max-1" class="font-black text-slate-900">--°</span> / <span id="fc-min-1" class="text-slate-500">--°</span></span>
+            <span class="text-[10px] text-sky-800 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200"><i class="fa-solid fa-umbrella text-[9px] mr-1"></i><span id="fc-rain-1">0%</span></span>
           </div>
 
-          <div class="flex items-center justify-between p-2 rounded bg-white/70 border border-slate-100 font-mono text-[11px] shadow-2xs">
-            <span class="font-bold text-slate-700 flex items-center gap-1.5"><span id="fc-day-2">Day After</span></span>
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-white/90 border border-slate-200 font-mono text-[11px] shadow-2xs">
+            <span class="font-extrabold text-slate-800 flex items-center gap-1.5"><span id="fc-day-2">Day After</span></span>
             <span id="fc-icon-2" class="text-base">⛅</span>
-            <span class="text-slate-600"><span id="fc-max-2" class="font-bold text-slate-800">--°</span> / <span id="fc-min-2" class="text-slate-400">--°</span></span>
-            <span class="text-[10px] text-sky-600 font-medium"><i class="fa-solid fa-umbrella text-[9px]"></i> <span id="fc-rain-2">0%</span></span>
+            <span class="text-slate-700 font-bold"><span id="fc-max-2" class="font-black text-slate-900">--°</span> / <span id="fc-min-2" class="text-slate-500">--°</span></span>
+            <span class="text-[10px] text-sky-800 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200"><i class="fa-solid fa-umbrella text-[9px] mr-1"></i><span id="fc-rain-2">0%</span></span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Dual Oscilloscope Waveform Traces (Fixed Visible Grid & Active Standby) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       
       <!-- Chart 1: Air Quality & Combustible Gas -->
-      <div class="p-4 rounded card-shell relative">
-        <div class="flex items-center justify-between mb-2">
+      <div class="p-4 sm:p-5 rounded-lg card-shell relative border border-slate-300 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
           <div class="flex items-center space-x-2">
-            <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 1 // AIR POLLUTION & GAS SPECTRUM</span>
+            <span class="font-black text-xs text-slate-900 uppercase tracking-wider">TRACE 1 // AIR POLLUTION & GAS SPECTRUM</span>
           </div>
-          <div class="flex items-center space-x-3 text-[11px] font-mono">
-            <button id="btn-zoom-gas" class="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center" title="Magnify subtle sensor fluctuations">
-              <i class="fa-solid fa-magnifying-glass-chart text-sky-600 mr-1"></i><span id="zoom-gas-label">ZOOM: OFF</span>
+          <div class="flex items-center space-x-2 text-[11px] font-mono">
+            <button id="btn-zoom-gas" class="px-2.5 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-[10px] font-bold transition flex items-center shadow-2xs cursor-pointer" title="Magnify subtle sensor fluctuations">
+              <i class="fa-solid fa-magnifying-glass-chart text-sky-600 mr-1.5"></i><span id="zoom-gas-label">ZOOM: OFF</span>
             </button>
-            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-sky-600"></span><span class="text-slate-600">MQ-135 AQI</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-rose-600"></span><span class="text-slate-600">MQ-9 Gas</span></span>
+            <span class="flex items-center space-x-1 bg-sky-50 text-sky-800 border border-sky-200 px-2 py-0.5 rounded font-bold text-[10px]"><span class="w-2 h-2 rounded-full bg-sky-600"></span><span>MQ-135</span></span>
+            <span class="flex items-center space-x-1 bg-rose-50 text-rose-800 border border-rose-200 px-2 py-0.5 rounded font-bold text-[10px]"><span class="w-2 h-2 rounded-full bg-rose-600"></span><span>MQ-9</span></span>
           </div>
         </div>
 
         <!-- Standby Watermark (Hides automatically upon telemetry arrival) -->
         <div id="chart-gas-standby" class="absolute inset-x-4 inset-y-12 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
-          <span class="font-mono text-[11px] text-slate-400 bg-white/90 px-3 py-1 rounded border border-slate-200 shadow-sm flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+          <span class="font-mono text-[11px] font-bold text-slate-600 bg-white/95 px-3.5 py-1.5 rounded-md border border-slate-300 shadow-md flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse"></span>
             OSCILLOSCOPE ARMED — AWAITING ESP32-S3 TELEMETRY STREAM
           </span>
         </div>
@@ -538,24 +571,24 @@
       </div>
 
       <!-- Chart 2: Dust Density & Ambient Temperature -->
-      <div class="p-4 rounded card-shell relative">
-        <div class="flex items-center justify-between mb-2">
+      <div class="p-4 sm:p-5 rounded-lg card-shell relative border border-slate-300 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
           <div class="flex items-center space-x-2">
-            <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">TRACE 2 // PARTICULATE DUST & TEMPERATURE</span>
+            <span class="font-black text-xs text-slate-900 uppercase tracking-wider">TRACE 2 // PARTICULATE DUST & TEMPERATURE</span>
           </div>
-          <div class="flex items-center space-x-3 text-[11px] font-mono">
-            <button id="btn-zoom-dust" class="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] font-semibold transition flex items-center" title="Magnify subtle sensor fluctuations">
-              <i class="fa-solid fa-magnifying-glass-chart text-amber-600 mr-1"></i><span id="zoom-dust-label">ZOOM: OFF</span>
+          <div class="flex items-center space-x-2 text-[11px] font-mono">
+            <button id="btn-zoom-dust" class="px-2.5 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-[10px] font-bold transition flex items-center shadow-2xs cursor-pointer" title="Magnify subtle sensor fluctuations">
+              <i class="fa-solid fa-magnifying-glass-chart text-amber-600 mr-1.5"></i><span id="zoom-dust-label">ZOOM: OFF</span>
             </button>
-            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-amber-500"></span><span class="text-slate-600">Dust (µg/m³)</span></span>
-            <span class="flex items-center space-x-1"><span class="w-2.5 h-0.5 bg-emerald-600"></span><span class="text-slate-600">Temp (°C)</span></span>
+            <span class="flex items-center space-x-1 bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-bold text-[10px]"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Dust</span></span>
+            <span class="flex items-center space-x-1 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold text-[10px]"><span class="w-2 h-2 rounded-full bg-emerald-600"></span><span>Temp</span></span>
           </div>
         </div>
 
         <!-- Standby Watermark -->
         <div id="chart-dust-standby" class="absolute inset-x-4 inset-y-12 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
-          <span class="font-mono text-[11px] text-slate-400 bg-white/90 px-3 py-1 rounded border border-slate-200 shadow-sm flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span class="font-mono text-[11px] font-bold text-slate-600 bg-white/95 px-3.5 py-1.5 rounded-md border border-slate-300 shadow-md flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
             OSCILLOSCOPE ARMED — AWAITING ESP32-S3 TELEMETRY STREAM
           </span>
         </div>
@@ -568,46 +601,46 @@
     </div>
 
     <!-- Historical Telemetry Ledger Table (Supabase Cold Sink) -->
-    <div class="rounded card-shell">
-      <div class="px-4 py-3 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+    <div class="rounded-lg card-shell border border-slate-300 shadow-sm overflow-hidden">
+      <div class="px-4 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-database text-slate-400 text-xs"></i>
-          <span class="font-bold text-xs text-slate-800 uppercase tracking-wide">Supabase Postgres Telemetry Ledger</span>
-          <span class="text-slate-400 text-xs font-mono">(Cold Sink // 15s Cadence)</span>
+          <i class="fa-solid fa-database text-slate-500 text-xs"></i>
+          <span class="font-black text-xs text-slate-900 uppercase tracking-wider">Supabase Postgres Telemetry Ledger</span>
+          <span class="text-slate-500 text-xs font-mono font-bold">(Cold Sink // 15s Cadence)</span>
         </div>
         <div class="flex items-center space-x-2">
-          <button id="btn-refresh" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
-            <i class="fa-solid fa-arrows-rotate text-[10px]"></i> REFRESH
+          <button id="btn-refresh" class="px-3 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-mono text-slate-800 font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer">
+            <i class="fa-solid fa-arrows-rotate text-[10px] text-sky-600"></i> REFRESH
           </button>
-          <button id="btn-export-csv" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
-            <i class="fa-solid fa-file-csv text-[10px]"></i> EXPORT CSV
+          <button id="btn-export-csv" class="px-3 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-mono text-slate-800 font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer">
+            <i class="fa-solid fa-file-csv text-[10px] text-emerald-600"></i> EXPORT CSV
           </button>
-          <button id="btn-export-json" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-50 text-[11px] font-mono text-slate-700 transition flex items-center gap-1">
-            <i class="fa-solid fa-code text-[10px]"></i> EXPORT JSON
+          <button id="btn-export-json" class="px-3 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-mono text-slate-800 font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer">
+            <i class="fa-solid fa-code text-[10px] text-indigo-600"></i> EXPORT JSON
           </button>
-          <button id="btn-export-pdf" class="px-2.5 py-1 rounded border border-rose-300 bg-rose-50 hover:bg-rose-100 text-[11px] font-mono text-rose-800 transition flex items-center gap-1 font-semibold">
-            <i class="fa-solid fa-file-pdf text-[11px] text-rose-600"></i> OFFICIAL REPORT (PDF)
+          <button id="btn-export-pdf" class="px-3.5 py-1 rounded-md border border-rose-600 bg-rose-600 hover:bg-rose-700 text-[11px] font-mono text-white transition flex items-center gap-1 font-bold shadow-xs cursor-pointer">
+            <i class="fa-solid fa-file-pdf text-[11px] text-white"></i> OFFICIAL REPORT (PDF)
           </button>
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left font-mono text-[11px]">
-          <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 text-[10px] uppercase">
+          <thead class="bg-slate-100 text-slate-800 border-b border-slate-300 text-[10px] font-black uppercase tracking-wider">
             <tr>
-              <th class="py-2.5 px-4 font-semibold">RECORD ID</th>
-              <th class="py-2.5 px-4 font-semibold">TIMESTAMP (UTC)</th>
-              <th class="py-2.5 px-4 font-semibold">MQ-135 (AQI)</th>
-              <th class="py-2.5 px-4 font-semibold">MQ-9 (CO/GAS)</th>
-              <th class="py-2.5 px-4 font-semibold">DUST (µg/m³)</th>
-              <th class="py-2.5 px-4 font-semibold">TEMP (°C)</th>
-              <th class="py-2.5 px-4 font-semibold">HUMIDITY (%RH)</th>
-              <th class="py-2.5 px-4 text-right font-semibold">SAFETY STATUS</th>
+              <th class="py-3 px-4 font-black">RECORD ID</th>
+              <th class="py-3 px-4 font-black">TIMESTAMP (UTC)</th>
+              <th class="py-3 px-4 font-black">MQ-135 (AQI)</th>
+              <th class="py-3 px-4 font-black">MQ-9 (CO/GAS)</th>
+              <th class="py-3 px-4 font-black">DUST (µg/m³)</th>
+              <th class="py-3 px-4 font-black">TEMP (°C)</th>
+              <th class="py-3 px-4 font-black">HUMIDITY (%RH)</th>
+              <th class="py-3 px-4 text-right font-black">SAFETY STATUS</th>
             </tr>
           </thead>
-          <tbody id="telemetry-table-body" class="divide-y divide-slate-100 text-slate-700">
+          <tbody id="telemetry-table-body" class="divide-y divide-slate-200 text-slate-800">
             <tr>
-              <td colspan="8" class="py-6 text-center text-slate-400 font-sans italic">
+              <td colspan="8" class="py-6 text-center text-slate-500 font-sans italic font-medium">
                 Connecting to Supabase Postgres endpoint...
               </td>
             </tr>
@@ -617,80 +650,80 @@
     </div>
 
     <!-- Laboratory Test Bench Controls (Simulation Toolbar) -->
-    <details class="p-3 rounded card-shell text-xs">
-      <summary class="cursor-pointer font-bold text-slate-700 hover:text-slate-900 transition flex items-center justify-between">
-        <span><i class="fa-solid fa-sliders mr-1.5 text-slate-400"></i> LAB VIVA / DEMO BENCH SIMULATOR (CLICK TO EXPAND)</span>
-        <span class="text-[10px] font-mono text-slate-400 uppercase">Interactive Testing Controls</span>
+    <details class="p-4 rounded-lg card-shell border border-slate-300 shadow-sm text-xs">
+      <summary class="cursor-pointer font-black text-slate-800 hover:text-slate-950 transition flex items-center justify-between">
+        <span><i class="fa-solid fa-sliders mr-2 text-slate-500"></i> LAB VIVA / DEMO BENCH SIMULATOR (CLICK TO EXPAND)</span>
+        <span class="text-[10px] font-mono font-bold text-slate-500 uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Interactive Testing Controls</span>
       </summary>
-      <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 font-mono text-[11px]">
-        <span class="text-slate-500 font-sans mr-2">Simulate Safety Scenarios:</span>
-        <button id="btn-sim-normal" class="px-3 py-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-medium transition">
+      <div class="mt-3.5 pt-3.5 border-t border-slate-200 flex flex-wrap items-center gap-2.5 font-mono text-[11px]">
+        <span class="text-slate-600 font-sans font-bold mr-2">Simulate Safety Scenarios:</span>
+        <button id="btn-sim-normal" class="px-3.5 py-1.5 rounded-md border border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 font-bold shadow-2xs transition cursor-pointer">
           1. NOMINAL STATE (CODE GREEN)
         </button>
-        <button id="btn-sim-warn" class="px-3 py-1.5 rounded border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 font-medium transition">
+        <button id="btn-sim-warn" class="px-3.5 py-1.5 rounded-md border border-amber-500 bg-amber-500 text-slate-950 hover:bg-amber-600 font-bold shadow-2xs transition cursor-pointer">
           2. WARNING STATE (CODE AMBER)
         </button>
-        <button id="btn-sim-danger" class="px-3 py-1.5 rounded border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 font-medium transition">
+        <button id="btn-sim-danger" class="px-3.5 py-1.5 rounded-md border border-rose-600 bg-rose-600 text-white hover:bg-rose-700 font-bold shadow-2xs transition cursor-pointer">
           3. CRITICAL GAS LEAK (CODE RED)
         </button>
       </div>
     </details>
 
     <!-- Gas Spectrum Reference & Standard Limits Guide (Normal vs Sensor Data vs Hazard) -->
-    <details class="p-3.5 rounded card-shell text-xs">
-      <summary class="cursor-pointer font-bold text-slate-700 hover:text-slate-900 transition flex items-center justify-between">
-        <span><i class="fa-solid fa-flask-vial mr-1.5 text-sky-600"></i> GAS SPECTRUM GUIDE: BASELINE VS LIVE SENSOR DATA VS HAZARD LIMITS (CLICK TO EXPAND)</span>
-        <span class="text-[10px] font-mono text-slate-400 uppercase">OSHA / WHO / ASHRAE Standards</span>
+    <details class="p-4 rounded-lg card-shell border border-slate-300 shadow-sm text-xs">
+      <summary class="cursor-pointer font-black text-slate-800 hover:text-slate-950 transition flex items-center justify-between">
+        <span><i class="fa-solid fa-flask-vial mr-2 text-sky-700"></i> GAS SPECTRUM GUIDE: BASELINE VS LIVE SENSOR DATA VS HAZARD LIMITS (CLICK TO EXPAND)</span>
+        <span class="text-[10px] font-mono font-bold text-slate-500 uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">OSHA / WHO / ASHRAE Standards</span>
       </summary>
-      <div class="mt-3 pt-3 border-t border-slate-100 overflow-x-auto">
+      <div class="mt-3.5 pt-3.5 border-t border-slate-200 overflow-x-auto">
         <table class="w-full text-left font-mono text-[11px]">
-          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 text-[10px] uppercase">
+          <thead class="bg-slate-100 text-slate-800 border-b border-slate-300 text-[10px] font-black uppercase tracking-wider">
             <tr>
-              <th class="py-2.5 px-3">Target Gas Compound</th>
-              <th class="py-2.5 px-3">Detecting Sensor</th>
-              <th class="py-2.5 px-3">Clean Air Normal Baseline</th>
-              <th class="py-2.5 px-3">Your Live Sensor Reading</th>
-              <th class="py-2.5 px-3">Warning / Caution Limit</th>
-              <th class="py-2.5 px-3">Critical Hazard Limit</th>
-              <th class="py-2.5 px-3">Safety & Health Impact</th>
+              <th class="py-3 px-3">Target Gas Compound</th>
+              <th class="py-3 px-3">Detecting Sensor</th>
+              <th class="py-3 px-3">Clean Air Normal Baseline</th>
+              <th class="py-3 px-3">Your Live Sensor Reading</th>
+              <th class="py-3 px-3">Warning / Caution Limit</th>
+              <th class="py-3 px-3">Critical Hazard Limit</th>
+              <th class="py-3 px-3">Safety & Health Impact</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-700">
+          <tbody class="divide-y divide-slate-200 text-slate-800">
             <tr>
-              <td class="py-2.5 px-3 font-bold text-slate-900">CO₂ (Carbon Dioxide)</td>
-              <td class="py-2.5 px-3 font-semibold text-sky-700">MQ-135</td>
-              <td class="py-2.5 px-3 text-emerald-700 font-semibold">400 – 600 PPM</td>
-              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-co2">-- PPM</td>
-              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 1,000 PPM</td>
-              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 2,500 – 5,000 PPM</td>
-              <td class="py-2.5 px-3 text-slate-500 font-sans">Drowsiness, reduced cognitive performance, ventilation alert</td>
+              <td class="py-3 px-3 font-black text-slate-900">CO₂ (Carbon Dioxide)</td>
+              <td class="py-3 px-3 font-bold text-sky-800">MQ-135</td>
+              <td class="py-3 px-3 text-emerald-800 font-bold">400 – 600 PPM</td>
+              <td class="py-3 px-3 font-black text-slate-900" id="table-val-co2">-- PPM</td>
+              <td class="py-3 px-3 text-amber-700 font-bold">&gt; 1,000 PPM</td>
+              <td class="py-3 px-3 text-rose-700 font-black">&gt; 2,500 – 5,000 PPM</td>
+              <td class="py-3 px-3 text-slate-600 font-sans font-medium">Drowsiness, reduced cognitive performance, ventilation alert</td>
             </tr>
             <tr>
-              <td class="py-2.5 px-3 font-bold text-slate-900">NH₃ (Ammonia Vapor)</td>
-              <td class="py-2.5 px-3 font-semibold text-sky-700">MQ-135</td>
-              <td class="py-2.5 px-3 text-emerald-700 font-semibold">&lt; 1.0 PPM</td>
-              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-nh3">-- PPM</td>
-              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 25.0 PPM</td>
-              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 50.0 PPM</td>
-              <td class="py-2.5 px-3 text-slate-500 font-sans">Respiratory tract irritation, eye burning, industrial toxic risk</td>
+              <td class="py-3 px-3 font-black text-slate-900">NH₃ (Ammonia Vapor)</td>
+              <td class="py-3 px-3 font-bold text-sky-800">MQ-135</td>
+              <td class="py-3 px-3 text-emerald-800 font-bold">&lt; 1.0 PPM</td>
+              <td class="py-3 px-3 font-black text-slate-900" id="table-val-nh3">-- PPM</td>
+              <td class="py-3 px-3 text-amber-700 font-bold">&gt; 25.0 PPM</td>
+              <td class="py-3 px-3 text-rose-700 font-black">&gt; 50.0 PPM</td>
+              <td class="py-3 px-3 text-slate-600 font-sans font-medium">Respiratory tract irritation, eye burning, industrial toxic risk</td>
             </tr>
             <tr>
-              <td class="py-2.5 px-3 font-bold text-slate-900">CO (Carbon Monoxide)</td>
-              <td class="py-2.5 px-3 font-semibold text-rose-700">MQ-9</td>
-              <td class="py-2.5 px-3 text-emerald-700 font-semibold">0.5 – 5.0 PPM</td>
-              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-co">-- PPM</td>
-              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 25.0 PPM</td>
-              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 70.0 – 100 PPM</td>
-              <td class="py-2.5 px-3 text-slate-500 font-sans">Lethal silent poison, binds hemoglobin, severe hypoxia</td>
+              <td class="py-3 px-3 font-black text-slate-900">CO (Carbon Monoxide)</td>
+              <td class="py-3 px-3 font-bold text-rose-800">MQ-9</td>
+              <td class="py-3 px-3 text-emerald-800 font-bold">0.5 – 5.0 PPM</td>
+              <td class="py-3 px-3 font-black text-slate-900" id="table-val-co">-- PPM</td>
+              <td class="py-3 px-3 text-amber-700 font-bold">&gt; 25.0 PPM</td>
+              <td class="py-3 px-3 text-rose-700 font-black">&gt; 70.0 – 100 PPM</td>
+              <td class="py-3 px-3 text-slate-600 font-sans font-medium">Lethal silent poison, binds hemoglobin, severe hypoxia</td>
             </tr>
             <tr>
-              <td class="py-2.5 px-3 font-bold text-slate-900">CH₄ / LPG (Combustible Fuel)</td>
-              <td class="py-2.5 px-3 font-semibold text-rose-700">MQ-9</td>
-              <td class="py-2.5 px-3 text-emerald-700 font-semibold">&lt; 200 PPM</td>
-              <td class="py-2.5 px-3 font-bold text-slate-900" id="table-val-combustible">-- PPM</td>
-              <td class="py-2.5 px-3 text-amber-600 font-semibold">&gt; 1,000 PPM</td>
-              <td class="py-2.5 px-3 text-rose-600 font-bold">&gt; 5,000 PPM (10% LEL)</td>
-              <td class="py-2.5 px-3 text-slate-500 font-sans">Fire, deflagration, explosive fuel accumulation risk</td>
+              <td class="py-3 px-3 font-black text-slate-900">CH₄ / LPG (Combustible Fuel)</td>
+              <td class="py-3 px-3 font-bold text-rose-800">MQ-9</td>
+              <td class="py-3 px-3 text-emerald-800 font-bold">&lt; 200 PPM</td>
+              <td class="py-3 px-3 font-black text-slate-900" id="table-val-combustible">-- PPM</td>
+              <td class="py-3 px-3 text-amber-700 font-bold">&gt; 1,000 PPM</td>
+              <td class="py-3 px-3 text-rose-700 font-black">&gt; 5,000 PPM (10% LEL)</td>
+              <td class="py-3 px-3 text-slate-600 font-sans font-medium">Fire, deflagration, explosive fuel accumulation risk</td>
             </tr>
           </tbody>
         </table>
