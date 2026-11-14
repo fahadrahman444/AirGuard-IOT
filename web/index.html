@@ -84,9 +84,6 @@
         </div>
         <div class="flex items-center space-x-2">
           <span class="font-extrabold text-base tracking-tight text-slate-900">AirGuard IoT</span>
-          <span class="text-slate-400">/</span>
-          <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">ESP32-S3</span>
-          <span class="font-mono text-xs text-slate-600 font-semibold hidden sm:inline">UITS CSE402</span>
         </div>
       </div>
 
@@ -1655,12 +1652,12 @@
         sDesc.className = 'text-xs text-amber-700';
         sDesc.innerText = 'Air quality degradation or mild gas traces detected. Ensure laboratory ventilation.';
       } else {
-        strip.className = 'p-3.5 rounded card-shell flex items-center justify-between transition-colors';
+        strip.className = 'hidden';
         pill.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
         sTitle.className = 'font-bold text-xs tracking-tight text-slate-900 uppercase';
-        sTitle.innerText = 'SYSTEM NOMINAL — ISO/OSHA COMPLIANT';
+        sTitle.innerText = '';
         sDesc.className = 'text-xs text-slate-600';
-        sDesc.innerText = 'All atmospheric gas, combustible vapor, dust particulate, and thermal levels are within permissible safety limits.';
+        sDesc.innerText = '';
       }
     }
 
